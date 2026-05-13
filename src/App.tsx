@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/authStore'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import HomePage from '@/pages/home/HomePage'
+import { MainLayout } from '@/components/layout/MainLayout'
 
 // Guard untuk route yang butuh login
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,7 +45,9 @@ export default function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <MainLayout>
+              <HomePage />
+            </MainLayout>
           </ProtectedRoute>
         }
       />
