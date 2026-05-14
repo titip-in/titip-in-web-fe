@@ -1,8 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useState } from "react";
 
 export function Topbar() {
   const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=jastip`);
+    }
+  };
 
   return (
     <header className="topbar bg-charcoal flex items-center px-6 gap-4 sticky top-0 z-[300]" style={{ gridColumn: "1 / -1", height: "var(--topbar-h)" }}>
@@ -18,13 +28,19 @@ export function Topbar() {
       </div>
 
       <div className="topbar-actions flex items-center gap-3 ml-auto">
-        <div className="topbar-search bg-white/5 border border-white/5 rounded-full py-2 px-4 flex items-center gap-2 cursor-pointer transition-colors duration-100 min-w-[240px] hover:bg-white/10">
+        <form onSubmit={handleSearch} className="topbar-search bg-white/5 border border-white/5 rounded-full py-2 px-4 flex items-center gap-2 transition-colors duration-100 min-w-[240px] focus-within:bg-white/10">
           <svg className="topbar-search-icon text-[14px] opacity-50 text-cream w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <span className="topbar-search-text text-[13px] text-cream/35 font-body">Cari sesuatu...</span>
-          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold">⌘K</span>
-        </div>
+          <input 
+            type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari jastip atau barang..." 
+            className="topbar-search-text text-[13px] text-cream bg-transparent border-none outline-none w-full placeholder:text-cream/35 font-body"
+          />
+          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold">↵</span>
+        </form>
 
         <button className="topbar-icon-btn w-9 h-9 rounded-md bg-white/5 border-none flex items-center justify-center cursor-pointer relative transition-colors duration-100 text-cream/60 hover:bg-white/10">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,9 +49,13 @@ export function Topbar() {
           <span className="topbar-notif-dot absolute top-[6px] right-[7px] w-[7px] h-[7px] bg-terracotta rounded-full border-2 border-charcoal"></span>
         </button>
 
-        <div className="topbar-avatar w-[34px] h-[34px] rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[13px] font-bold text-white cursor-pointer border-2 border-cream/15 transition-colors duration-100 hover:border-cream/35">
-          {user?.name?.charAt(0).toUpperCase() || "U"}
-        </div>
+        <Link to="/profile" className="topbar-avatar w-[34px] h-[34px] rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[13px] font-bold text-white cursor-pointer border-2 border-cream/15 transition-colors duration-100 hover:border-cream/35 overflow-hidden">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            user?.name?.charAt(0).toUpperCase() || "U"
+          )}
+        </Link>
       </div>
     </header>
   );

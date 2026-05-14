@@ -1,163 +1,208 @@
 import { StatCard } from "@/components/home/StatCard";
 import { JastipCard } from "@/components/home/JastipCard";
-import { ActivityFeed } from "@/components/home/ActivityFeed";
+import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useAuthStore } from "@/stores/authStore";
+import { useJastipListings, useJastipRequests } from "@/hooks/useJastip";
+import { usePrelovedListings } from "@/hooks/usePreloved";
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
+  
+  const { data: jastipListings, isLoading: isLoadingJastip } = useJastipListings();
+  const { data: jastipRequests } = useJastipRequests();
+  const { data: prelovedListings, isLoading: isLoadingPreloved } = usePrelovedListings();
+
+  const activeJastip = jastipListings?.filter(l => l.status === 'ACTIVE') || [];
+  const activePreloved = prelovedListings?.filter(l => l.status === 'AVAILABLE') || [];
+  const openRequests = jastipRequests?.filter(r => r.status === 'OPEN') || [];
 
   return (
-    <>
-      {/* Hero Section */}
+    <div className="content-max animate-fade-in">
+      {/* ── HERO ── */}
       <section className="hero bg-charcoal rounded-2xl p-10 relative overflow-hidden mb-8 min-h-[220px] flex items-center">
-        <div className="hero-blobs">
-          <div className="hero-blob w-[200px] h-[200px] bg-sage opacity-10 absolute rounded-full -top-[60px] -right-[40px]"></div>
-          <div className="hero-blob w-[120px] h-[120px] bg-terracotta opacity-15 absolute rounded-full -bottom-[30px] right-[200px]"></div>
-          <div className="hero-blob w-[80px] h-[80px] bg-gold opacity-10 absolute rounded-full top-[20px] right-[160px]"></div>
-        </div>
+        <div className="hero-blob w-[200px] h-[200px] bg-sage opacity-10 absolute rounded-full -top-[60px] -right-[40px]"></div>
+        <div className="hero-blob w-[120px] h-[120px] bg-terracotta opacity-[0.12] absolute rounded-full -bottom-[30px] right-[200px]"></div>
+        <div className="hero-blob w-[80px] h-[80px] bg-gold opacity-[0.08] absolute rounded-full top-[20px] right-[160px]"></div>
         
         <div className="hero-content relative z-[1] max-w-[560px]">
-          <div className="hero-tag text-[11px] font-semibold tracking-[2px] text-sage uppercase mb-3">Selamat Datang</div>
+          <div className="hero-tag text-[11px] font-semibold tracking-[2px] text-sage uppercase mb-3">● Tersedia Sekarang</div>
           <h1 className="hero-title font-display text-[42px] font-light italic text-cream leading-[1.1] mb-3">
-            Hai, {user?.name?.split(' ')[0] || 'User'}!
+            Jastip & Preloved<br/>di Malang
           </h1>
           <p className="hero-desc text-[15px] text-cream/45 leading-[1.6] mb-6 max-w-[440px]">
-            Ada rencana pulang kampung minggu ini? Yuk, buka jastip untuk teman-teman kampus yang butuh titip barang.
+            Platform hyperlocal untuk mahasiswa Malang. Temukan jastip terdekat dan barang preloved dengan mudah — langsung hubungi via WhatsApp.
           </p>
           <div className="hero-actions flex gap-3">
-            <button className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md">
-              Buka Jastip Baru
+            <button 
+              onClick={() => navigate('/jastip/listings/create')}
+              className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md active:scale-[0.97] flex items-center gap-2"
+            >
+              📦 Buka Jastip
             </button>
-            <button className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/10 rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out">
-              Cari Jastip
+            <button 
+              onClick={() => navigate('/preloved/listings/create')}
+              className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/12 rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out active:scale-[0.97] flex items-center gap-2"
+            >
+              🛍️ Jual Barang
             </button>
           </div>
         </div>
 
-        <div className="hero-stats absolute right-10 top-1/2 -translate-y-1/2 flex gap-4 z-[1]">
-          <div className="hero-stat bg-cream/5 border border-cream/10 rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
-            <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">Rp1.2M</div>
-            <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">PENDAPATAN</div>
+        <div className="hero-stats absolute right-10 top-1/2 -translate-y-1/2 flex gap-4 z-[1] hidden lg:flex">
+          <div className="hero-stat bg-cream/[0.06] border border-cream/[0.08] rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
+            <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">{activeJastip.length}</div>
+            <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">Jastip Aktif</div>
           </div>
-          <div className="hero-stat bg-cream/5 border border-cream/10 rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
-            <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">12</div>
-            <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">TRX AKTIF</div>
+          <div className="hero-stat bg-cream/[0.06] border border-cream/[0.08] rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
+            <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">{activePreloved.length}</div>
+            <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">Preloved</div>
+          </div>
+          <div className="hero-stat bg-cream/[0.06] border border-cream/[0.08] rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
+            <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">{openRequests.length}</div>
+            <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">Request</div>
           </div>
         </div>
       </section>
 
-      {/* Stats Grid */}
-      <div className="stats-grid grid grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon="📦"
-          iconBgClass="bg-sage-pale text-sage-dark"
-          label="TOTAL JASTIP"
-          value="48"
-          delta={{ value: "12% bulan ini", isUp: true }}
-        />
-        <StatCard
-          icon="🛍️"
-          iconBgClass="bg-terracotta-pale text-terracotta-dark"
-          label="BARANG PRELOVED"
-          value="15"
-          delta={{ value: "3 terjual hari ini", isUp: true }}
-        />
-        <StatCard
-          icon="⭐"
-          iconBgClass="bg-gold-pale text-gold-dark"
-          label="RATING SAYA"
-          value="4.9"
-        />
-        <StatCard
-          icon="💬"
-          iconBgClass="bg-cream-dark text-charcoal"
-          label="PESAN BELUM DIBACA"
-          value="3"
-        />
+      {/* ── STATS ── */}
+      <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard icon="📦" iconBgClass="bg-sage-pale text-sage-dark" label="Jastip Aktif" value={activeJastip.length.toString()} delta={{ value: "Diperbarui hari ini", isUp: true }} />
+        <StatCard icon="🛍️" iconBgClass="bg-terracotta-pale text-terracotta-dark" label="Preloved Dijual" value={activePreloved.length.toString()} delta={{ value: "Banyak pilihan", isUp: true }} />
+        <StatCard icon="📍" iconBgClass="bg-gold-pale text-gold-dark" label="Request Terbuka" value={openRequests.length.toString()} delta={{ value: "Siap diambil", isUp: true }} />
+        <StatCard icon="👥" iconBgClass="bg-cream-dark text-charcoal-60" label="Total Listing" value={(jastipListings?.length || 0).toString()} delta={{ value: "Semua jastip", isUp: true }} />
       </div>
 
-      {/* Content Grid */}
-      <div className="content-grid grid grid-cols-[1fr_380px] gap-6 mb-10">
-        
-        {/* Left Col: Jastip List */}
-        <div className="left-panel">
+      {/* ── JASTIP + RIGHT PANEL ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 mb-10">
+        {/* Jastip List */}
+        <section>
           <div className="section-header flex justify-between items-center mb-5">
             <div>
               <h2 className="section-title font-display text-[22px] font-medium text-charcoal">Jastip Tersedia</h2>
-              <div className="section-subtitle text-[13px] text-charcoal-60 mt-[2px]">Rute dari dan ke Malang Raya</div>
+              <div className="section-subtitle text-[13px] text-charcoal-60 mt-[2px]">Jastip aktif di sekitar Malang</div>
             </div>
-            <button className="text-[13px] font-semibold text-terracotta hover:text-terracotta-dark transition-colors">Lihat Semua Rute</button>
+            <button onClick={() => navigate('/jastip/listings')} className="btn btn-sm btn-outline rounded-full text-[12px] font-semibold border-[1.5px] border-charcoal-30 text-charcoal py-2 px-4 hover:border-charcoal hover:bg-charcoal-10 transition-colors">
+              Lihat Semua →
+            </button>
           </div>
 
           <div className="jastip-grid flex flex-col gap-4">
-            <JastipCard 
-              user={{ name: "Nadia Shafira", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: "N" }}
-              timeAgo="2 jam lalu"
-              status="Aktif"
-              route={{ from: "Surabaya", to: "Malang" }}
-              tags={["Food & Snack", "Dokumen", "Paket Kecil"]}
-              deadline="Besok, 16:00"
-              actionText="Titip Barang"
-            />
-            <JastipCard 
-              user={{ name: "Bima Arya", avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", avatarInitial: "B" }}
-              timeAgo="5 jam lalu"
-              status="Aktif"
-              route={{ from: "Jakarta", to: "Malang" }}
-              tags={["Gadget", "Buku", "Pakaian"]}
-              deadline="Senin, 10:00"
-              actionText="Titip Barang"
-            />
-            <JastipCard 
-              user={{ name: "Dimas Anggara", avatarClass: "bg-gradient-to-br from-gold to-gold-dark", avatarInitial: "D" }}
-              timeAgo="1 hari lalu"
-              status="Pending"
-              route={{ from: "Bandung", to: "Malang" }}
-              tags={["Sepatu", "Aksesoris"]}
-              deadline="Rabu, 14:00"
-              actionText="Lihat Detail"
-            />
+            {isLoadingJastip ? (
+              <div className="py-10 text-center text-charcoal-60 flex items-center justify-center gap-3">
+                <svg className="animate-spin h-5 w-5 text-sage" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Memuat jastip...
+              </div>
+            ) : jastipListings && jastipListings.length > 0 ? (
+              jastipListings.slice(0, 3).map((listing) => (
+                <JastipCard 
+                  key={listing.id}
+                  user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+                  timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
+                  status={listing.status}
+                  route={{ from: listing.from_loc, to: listing.to_loc }}
+                  tags={[listing.category?.name || "Umum"]}
+                  deadline={new Date(listing.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                  imageUrl={listing.image_url}
+                  actionText="💬 WhatsApp"
+                  onClick={() => navigate(`/jastip/listings/${listing.id}`)}
+                  onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+                />
+              ))
+            ) : (
+              <div className="py-10 text-center text-charcoal-60 border border-dashed border-subtle rounded-xl bg-elevated">Belum ada jastip tersedia saat ini.</div>
+            )}
           </div>
-        </div>
+        </section>
 
-        {/* Right Col: Activity Feed */}
-        <div className="right-panel flex flex-col gap-6">
-          <ActivityFeed 
-            items={[
-              {
-                dotClass: "bg-sage",
-                title: <span><strong className="font-semibold text-charcoal">Nadia</strong> menerima permintaan jastip Lapis Kukus Pahlawan Anda.</span>,
-                time: "10 menit yang lalu"
-              },
-              {
-                dotClass: "bg-terracotta",
-                title: <span>Pesanan sepatu preloved Anda telah <strong>dikirim</strong> oleh seller.</span>,
-                time: "2 jam yang lalu"
-              },
-              {
-                dotClass: "bg-gold",
-                title: <span>Dana sebesar <strong>Rp150.000</strong> telah ditambahkan ke dompet Anda.</span>,
-                time: "Kemarin, 14:30"
-              },
-              {
-                dotClass: "bg-cream-dark",
-                title: <span><strong className="font-semibold text-charcoal">Bima</strong> membalas pesan Anda mengenai jastip Jakarta.</span>,
-                time: "Kemarin, 09:15"
-              }
-            ]}
-          />
-
-          <div className="promo-card bg-gradient-to-br from-sage to-sage-dark rounded-xl p-5 text-white relative overflow-hidden">
-            <div className="absolute top-[-20px] right-[-20px] w-24 h-24 bg-white/10 rounded-full"></div>
-            <h3 className="font-display text-[18px] font-medium mb-2 relative z-[1]">Jadilah Trusted Jastipper!</h3>
-            <p className="text-[13px] text-white/80 mb-4 relative z-[1]">Dapatkan badge verifikasi dan tingkatkan kepercayaan penitip pada layanan Anda.</p>
-            <button className="bg-white text-sage-dark text-[12px] font-bold py-2 px-4 rounded-full border-none cursor-pointer relative z-[1] transition-transform duration-200 hover:scale-[1.02]">
-              Verifikasi Sekarang
-            </button>
+        {/* Right Panel — Quick Actions + Activity */}
+        <aside className="flex flex-col gap-6">
+          {/* Quick Actions */}
+          <div className="bg-elevated rounded-xl shadow-sm border border-subtle p-5">
+            <h3 className="font-display text-[16px] font-medium text-charcoal mb-4">Aksi Cepat</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: "📦", label: "Buka Jastip", desc: "Buat jastip baru", bg: "bg-sage-pale", path: "/jastip/listings/create" },
+                { icon: "🛍️", label: "Jual Barang", desc: "Post preloved", bg: "bg-terracotta-pale", path: "/preloved/listings/create" },
+                { icon: "📍", label: "Request", desc: "Minta dititipin", bg: "bg-gold-pale", path: "/jastip/requests/create" },
+                { icon: "🔍", label: "Cari", desc: "Cari barang", bg: "bg-cream-dark", path: "/preloved/listings" },
+              ].map((a) => (
+                <button key={a.path} onClick={() => navigate(a.path)} className={`${a.bg} rounded-lg p-4 text-left cursor-pointer transition-transform duration-100 hover:scale-[0.98] hover:shadow-sm flex flex-col gap-2`}>
+                  <span className="text-[22px]">{a.icon}</span>
+                  <span className="text-[12px] font-semibold text-charcoal">{a.label}</span>
+                  <span className="text-[10px] text-charcoal-60">{a.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
+          {/* Activity Feed */}
+          <div className="bg-elevated rounded-xl shadow-sm border border-subtle overflow-hidden">
+            <div className="px-5 py-4 border-b border-subtle flex justify-between items-center">
+              <h3 className="font-display text-[16px] font-medium text-charcoal">Aktivitas Terbaru</h3>
+              <span className="text-[11px] font-semibold text-charcoal-60 bg-cream-dark rounded-full py-1 px-3 cursor-pointer">Semua</span>
+            </div>
+            <div className="px-5 py-3">
+              {jastipListings?.slice(0, 4).map((l, i) => (
+                <div key={l.id} className="flex items-start gap-3 py-3 border-b border-subtle last:border-b-0">
+                  <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${i % 3 === 0 ? 'bg-sage' : i % 3 === 1 ? 'bg-terracotta' : 'bg-gold'}`}></div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] font-medium text-charcoal leading-[1.3] truncate">Jastip {l.from_loc} → {l.to_loc}</div>
+                    <div className="text-[11px] text-charcoal-60 mt-[1px]">{l.user?.name || 'User'} · {l.status}</div>
+                  </div>
+                  <span className="text-[10px] text-charcoal-30 font-medium whitespace-nowrap mt-[2px]">
+                    {new Date(l.created_at || '').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              )) || (
+                <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
+              )}
+            </div>
+          </div>
+        </aside>
       </div>
-    </>
+
+      {/* ── PRELOVED MARKETPLACE ── */}
+      <section className="mb-10">
+        <div className="section-header flex justify-between items-center mb-5">
+          <div>
+            <h2 className="section-title font-display text-[22px] font-medium text-charcoal">Preloved Marketplace</h2>
+            <div className="section-subtitle text-[13px] text-charcoal-60 mt-[2px]">Barang preloved dari mahasiswa Malang</div>
+          </div>
+          <button onClick={() => navigate('/preloved/listings')} className="btn btn-sm btn-outline rounded-full text-[12px] font-semibold border-[1.5px] border-charcoal-30 text-charcoal py-2 px-4 hover:border-charcoal hover:bg-charcoal-10 transition-colors">
+            Lihat Semua →
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {isLoadingPreloved ? (
+            <div className="col-span-full py-10 text-center text-charcoal-60 flex items-center justify-center gap-3">
+              <svg className="animate-spin h-5 w-5 text-terracotta" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Memuat preloved...
+            </div>
+          ) : prelovedListings && prelovedListings.length > 0 ? (
+            prelovedListings.slice(0, 5).map((listing, idx) => (
+              <PrelovedCard 
+                key={listing.id}
+                featured={idx === 0}
+                user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+                timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
+                status={listing.status}
+                title={listing.title}
+                price={listing.price}
+                condition={listing.condition}
+                imageUrl={listing.image_url}
+                actionText="Lihat"
+                onClick={() => navigate(`/preloved/listings/${listing.id}`)}
+                onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              />
+            ))
+          ) : (
+            <div className="col-span-full py-10 text-center text-charcoal-60 border border-dashed border-subtle rounded-xl bg-elevated">Belum ada barang preloved.</div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

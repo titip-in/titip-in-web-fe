@@ -1,14 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export interface User {
-  id: string
-  name: string
-  whatsapp_number: string
-  email: string
-  profile_picture_url: string | null
-  role: 'user' | 'merchant' | 'admin'
-}
+import { User } from '@/types/api'
 
 interface AuthState {
   user: User | null

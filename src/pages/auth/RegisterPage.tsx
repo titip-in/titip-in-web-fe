@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { User, ApiResponse } from "@/types/api";
+import { useAuthStore } from "@/stores/authStore";
+import api from "@/lib/api";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -15,15 +19,25 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      toast.error("Password dan Konfirmasi Password tidak cocok!");
+      return;
+    }
     setLoading(true);
     try {
-      // TODO: Implement actual register API call
-      // For now, just redirect to home on success
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await api.post<ApiResponse<{ access_token: string; user: User }>>("/v1/register", {
+        name,
+        email,
+        wa_number: whatsappNumber,
+        password,
+      });
+
+      const { user, access_token } = response.data.data;
+      useAuthStore.getState().setAuth(user, access_token);
       navigate("/", { replace: true });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Register failed:", error);
-      // TODO: Show error message
+      toast.error(error.response?.data?.message || "Registrasi gagal! Silakan periksa data Anda.");
     } finally {
       setLoading(false);
     }
@@ -153,12 +167,12 @@ export default function RegisterPage() {
         <div className="text-center mt-4">
           <p className="text-sm text-charcoal-60">
             Sudah punya akun?
-            <a
-              href="/auth/login"
+            <Link
+              to="/login"
               className="font-medium text-terracotta hover:text-terracotta-dark"
             >
               Masuk
-            </a>
+            </Link>
           </p>
         </div>
       </div>

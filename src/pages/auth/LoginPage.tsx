@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useAuthStore, User } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
+import { User, ApiResponse } from "@/types/api";
+import api from "@/lib/api";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -15,27 +18,17 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Dummy Auth check
-      if ((email === "admin" || email === "admin@admin.com") && password === "admin") {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const dummyUser: User = {
-          id: "usr_123",
-          name: "Admin Okta",
-          whatsapp_number: "08123456789",
-          email: "admin@admin.com",
-          profile_picture_url: null,
-          role: "admin",
-        };
-        const dummyToken = "dummy_token_12345";
-        
-        useAuthStore.getState().setAuth(dummyUser, dummyToken);
-        navigate("/", { replace: true });
-      } else {
-        alert("Email atau password salah! Gunakan admin / admin");
-      }
-    } catch (error) {
+      const response = await api.post<ApiResponse<{ access_token: string; user: User }>>("/v1/login", {
+        email,
+        password,
+      });
+
+      const { user, access_token } = response.data.data;
+      useAuthStore.getState().setAuth(user, access_token);
+      navigate("/", { replace: true });
+    } catch (error: any) {
       console.error("Login failed:", error);
+      toast.error(error.response?.data?.message || "Login gagal! Silakan periksa kredensial Anda.");
     } finally {
       setLoading(false);
     }
@@ -141,12 +134,12 @@ export default function LoginPage() {
         <div className="text-center mt-4">
           <p className="text-sm text-charcoal-60">
             Belum punya akun?
-            <a
-              href="/auth/register"
+            <Link
+              to="/register"
               className="font-medium text-terracotta hover:text-terracotta-dark"
             >
               Daftar
-            </a>
+            </Link>
           </p>
         </div>
       </div>
