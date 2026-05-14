@@ -1,0 +1,36 @@
+name: PR Verification Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Install, Test, and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      # - name: 🔍 Run Linting
+      #   run: npm run lint
+
+      - name: 🔠 Run Type Checking (TypeScript)
+        run: npm run type-check
+
+      - name: 🛠️ Test Build (Dry Run)
+        run: npm run build
+        env:
+          VITE_API_URL: 'https://titipin-api.bccdev.id/api'
+          VITE_APP_NAME: 'Titip.in'
