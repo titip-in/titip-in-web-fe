@@ -14,6 +14,13 @@ RUN npm ci
 # Copy the rest of the source code
 COPY . .
 
+# Pass build arguments for Vite environment variables
+ARG VITE_API_URL
+ARG VITE_APP_NAME="Titip.in"
+
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_APP_NAME=$VITE_APP_NAME
+
 # Build the application
 RUN npm run build
 
