@@ -4,20 +4,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useCreatePrelovedRequest } from "@/hooks/usePreloved";
+import { useCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
 
 export default function PrelovedRequestCreatePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedRequest();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createMutation.mutateAsync({
+        category_id: categoryId,
         title: title,
         description: description,
         max_price: parseInt(maxPrice, 10),
@@ -38,6 +42,30 @@ export default function PrelovedRequestCreatePage() {
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium text-charcoal-60 mb-3 block">Kategori Request</Label>
+            {isLoadingCategories ? (
+              <div className="text-sm text-charcoal-40">Memuat kategori...</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories?.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                      categoryId === cat.id 
+                        ? 'bg-sage text-white border-sage' 
+                        : 'bg-white text-charcoal-60 border-subtle hover:border-sage/50 hover:bg-sage/5'
+                    }`}
+                  >
+                    {cat.icon && <span className="mr-2">{cat.icon}</span>}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div>
             <Label htmlFor="title" className="text-sm font-medium text-charcoal-60">Nama Barang yang Dicari</Label>
             <Input

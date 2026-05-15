@@ -88,7 +88,7 @@ export default function JastipMinePage() {
   };
 
   return (
-    <div className="content-max animate-fade-in">
+    <div className="w-full animate-fade-in">
       {/* Header */}
       <section className="hero bg-charcoal rounded-2xl p-8 relative overflow-hidden mb-8">
         <div className="hero-blob w-[300px] h-[300px] bg-sage opacity-10 absolute rounded-full -top-[100px] -right-[80px]"></div>
@@ -143,10 +143,11 @@ export default function JastipMinePage() {
               timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
               status={item.status}
               route={{ from: item.from_loc, to: item.to_loc }}
-              tags={[item.category?.name || "Umum"]}
+              tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
               deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
               notes={item.notes}
-              imageUrl={item.image_url}
+              imageUrl={item.primary_image_url}
+              images={item.images}
               actionText="Lihat Detail"
               isOwner={true}
               onStatusChange={activeTab === 'listings' ? (newStatus) => handleStatusChange(item.id, newStatus) : undefined}

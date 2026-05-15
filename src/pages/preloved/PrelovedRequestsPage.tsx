@@ -2,13 +2,15 @@ import React from "react";
 import { usePrelovedRequests } from "@/hooks/usePreloved";
 import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function PrelovedRequestsPage() {
   const { data: requests, isLoading } = usePrelovedRequests();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="content-max animate-fade-in">
+    <div className="w-full animate-fade-in">
       <div className="section-header flex justify-between items-center mb-6">
         <div>
           <h1 className="font-display text-[28px] font-medium text-charcoal leading-tight">Cari Barang Preloved</h1>
@@ -37,8 +39,10 @@ export default function PrelovedRequestsPage() {
               status={request.status}
               title={request.title}
               maxPrice={request.max_price}
+              category={request.category ? `${request.category.icon || ''} ${request.category.name}`.trim() : undefined}
               description={request.description}
               actionText="Jual Barang Ini"
+              isOwner={request.user_id === user?.id}
               onClick={() => navigate(`/preloved/requests/${request.id}`)}
               onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
             />

@@ -1,15 +1,23 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ListingImage } from "@/types/api";
 
 interface DetailImageGalleryProps {
-  images: string | string[]; // Comma separated string or array
+  images: string | string[] | ListingImage[]; // Comma separated string, array of strings, or array of ListingImage
   alt?: string;
 }
 
 export function DetailImageGallery({ images, alt = "Product Image" }: DetailImageGalleryProps) {
-  const imageUrls = typeof images === 'string' 
-    ? images.split(',').filter(url => !!url.trim()) 
-    : images;
+  const imageUrls = React.useMemo(() => {
+    if (typeof images === 'string') {
+      return images.split(',').filter(url => !!url.trim());
+    }
+    if (Array.isArray(images) && images.length > 0) {
+      if (typeof images[0] === 'string') return images as string[];
+      return (images as ListingImage[]).map(img => img.image_url);
+    }
+    return [];
+  }, [images]);
 
   const [activeIndex, setActiveIndex] = useState(0);
 

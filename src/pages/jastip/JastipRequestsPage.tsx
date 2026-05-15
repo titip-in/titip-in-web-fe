@@ -2,13 +2,15 @@ import React from "react";
 import { useJastipRequests } from "@/hooks/useJastip";
 import { JastipCard } from "@/components/home/JastipCard";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function JastipRequestsPage() {
   const { data: requests, isLoading } = useJastipRequests();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="content-max animate-fade-in">
+    <div className="w-full animate-fade-in">
       <div className="section-header flex justify-between items-center mb-6">
         <div>
           <h1 className="font-display text-[28px] font-medium text-charcoal leading-tight">Request Jastip</h1>
@@ -36,9 +38,10 @@ export default function JastipRequestsPage() {
               timeAgo={new Date(request.created_at || '').toLocaleDateString('id-ID')}
               status={request.status}
               route={{ from: request.from_loc, to: request.to_loc }}
-              tags={[request.category?.name || "Umum"]}
+              tags={[request.category ? `${request.category.icon || ''} ${request.category.name}`.trim() : "Umum"]}
               notes={request.notes || undefined}
               actionText="Ambil Request"
+              isOwner={request.user_id === user?.id}
               onClick={() => navigate(`/jastip/requests/${request.id}`)}
               onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
             />

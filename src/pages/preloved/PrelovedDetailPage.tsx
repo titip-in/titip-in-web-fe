@@ -1,14 +1,57 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Check, RotateCcw, Trash2 } from "lucide-react";
 import { usePrelovedListingDetail } from "@/hooks/usePreloved";
 import { Button } from "@/components/ui/button";
 import { DetailImageGallery } from "@/components/ui/DetailImageGallery";
+import { useAuthStore } from "@/stores/authStore";
+import { useDeletePrelovedListing } from "@/hooks/usePreloved";
+import { toast } from "sonner";
+import api from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function PrelovedDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
   const { data: item, isLoading } = usePrelovedListingDetail(id || "");
-// ... (omitting formatRupiah for brevity, keeping existing implementation)
+  const deleteMutation = useDeletePrelovedListing();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+
+  const isOwner = currentUser?.id === item?.user_id;
+
+  const handleStatusChange = async (newStatus: string) => {
+    try {
+      await api.put(`/v1/preloved/listings/${id}`, { status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ['preloved'] });
+      toast.success("Status berhasil diperbarui");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Gagal memperbarui status");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(id || "");
+      toast.success("Listing berhasil dihapus");
+      navigate('/preloved/listings');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Gagal menghapus listing");
+    }
+  };
+
   const formatRupiah = (angka: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -50,49 +93,91 @@ export default function PrelovedDetailPage() {
         Kembali
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 bg-elevated border border-subtle rounded-2xl overflow-hidden shadow-sm">
-        <div className="bg-cream-dark aspect-square lg:aspect-auto h-[400px] lg:h-[600px] overflow-hidden">
-          <DetailImageGallery 
-            images={item.image_url || ""} 
-            alt={item.title} 
-          />
-        </div>
-
-        <div className="p-8 lg:p-12 flex flex-col">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <div className="status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase bg-sage text-white mb-3">
-                {item.status}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 bg-elevated border border-subtle rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-cream-dark aspect-square lg:aspect-auto h-[400px] lg:h-[600px] overflow-hidden">
+            <DetailImageGallery 
+              images={item.images || []} 
+              alt={item.title} 
+            />
+          </div>
+  
+          <div className="p-8 lg:p-12 flex flex-col">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <div className="status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase bg-sage text-white mb-3">
+                  {item.status}
+                </div>
+                <h1 className="font-display text-[36px] font-medium text-charcoal leading-tight mb-2">{item.title}</h1>
+                <div className="text-[28px] font-bold text-terracotta">{formatRupiah(item.price)}</div>
               </div>
-              <h1 className="font-display text-[36px] font-medium text-charcoal leading-tight mb-2">{item.title}</h1>
-              <div className="text-[28px] font-bold text-terracotta">{formatRupiah(item.price)}</div>
+            </div>
+  
+            <div className="space-y-6 flex-grow">
+              <div>
+                <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kondisi</h3>
+                <p className="text-charcoal font-medium">
+                  {item.condition === 'NEW' ? 'Baru' : item.condition === 'LIKE_NEW' ? 'Seperti Baru' : item.condition === 'GOOD' ? 'Bagus' : 'Cukup'}
+                </p>
+              </div>
+  
+              <div>
+                <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Deskripsi</h3>
+                <p className="text-charcoal-80 leading-relaxed whitespace-pre-wrap">{item.description}</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-6 flex-grow">
-            <div>
-              <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kondisi</h3>
-              <p className="text-charcoal font-medium">
-                {item.condition === 'NEW' ? 'Baru' : item.condition === 'LIKE_NEW' ? 'Seperti Baru' : item.condition === 'GOOD' ? 'Bagus' : 'Cukup'}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Deskripsi</h3>
-              <p className="text-charcoal-80 leading-relaxed whitespace-pre-wrap">{item.description}</p>
-            </div>
-
-            <div className="pt-6 border-t border-subtle">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-lg font-bold text-white">
-                  {(item.user?.name || "U").charAt(0).toUpperCase()}
+        <div className="space-y-6">
+          {/* Management Panel for Owners */}
+          {isOwner && (
+            <div className="bg-charcoal text-cream rounded-2xl p-8 shadow-lg border border-charcoal">
+              <h3 className="font-display text-xl mb-6 flex items-center gap-2">
+                ⚙️ Kelola Listing
+              </h3>
+              <div className="space-y-4">
+                <div className="p-4 bg-white/5 rounded-xl border border-white/10 mb-6">
+                  <div className="text-xs text-cream/40 uppercase tracking-widest mb-1">Status Saat Ini</div>
+                  <div className="font-bold text-lg text-terracotta-light">{item.status}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold text-charcoal">{item.user?.name || "User"}</div>
-                  <div className="text-xs text-charcoal-40">Penjual Terpercaya</div>
-                </div>
+                
+                <Button 
+                  onClick={() => handleStatusChange(item.status === 'AVAILABLE' ? 'SOLD' : 'AVAILABLE')}
+                  className={`w-full rounded-full py-6 font-bold ${
+                    item.status === 'AVAILABLE' ? 'bg-cream text-charcoal hover:bg-cream-hover' : 'bg-sage text-white hover:bg-sage-dark'
+                  }`}
+                >
+                  {item.status === 'AVAILABLE' ? (
+                    <span className="flex items-center gap-2"><Check size={18} /> Tandai Terjual</span>
+                  ) : (
+                    <span className="flex items-center gap-2"><RotateCcw size={18} /> Buka Kembali</span>
+                  )}
+                </Button>
+
+                <Button 
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="w-full bg-transparent border border-red text-red hover:bg-red/10 rounded-full py-6 font-bold mt-2"
+                >
+                  <span className="flex items-center gap-2"><Trash2 size={18} /> Hapus Listing</span>
+                </Button>
               </div>
+            </div>
+          )}
 
+          {/* User Info Panel */}
+          <div className="bg-elevated border border-subtle rounded-2xl p-8 shadow-sm">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-lg font-bold text-white">
+                {(item.user?.name || "U").charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-charcoal">{item.user?.name || "User"}</div>
+                <div className="text-xs text-charcoal-40">Penjual Terpercaya</div>
+              </div>
+            </div>
+
+            {!isOwner ? (
               <div className="flex gap-4">
                 <Button 
                   onClick={() => window.open(`https://wa.me/${item.user?.wa_number}`, '_blank')}
@@ -104,10 +189,31 @@ export default function PrelovedDetailPage() {
                   Hubungi Penjual
                 </Button>
               </div>
-            </div>
+            ) : (
+              <p className="text-center text-xs text-charcoal-40 italic">
+                Ini adalah listing Anda. Gunakan panel di atas untuk mengelola.
+              </p>
+            )}
           </div>
         </div>
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus Listing?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Listing Anda akan dihapus secara permanen dari Titip.in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red hover:bg-red/90 text-white">
+              Ya, Hapus Permanen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

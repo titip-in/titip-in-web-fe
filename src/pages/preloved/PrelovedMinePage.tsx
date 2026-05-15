@@ -88,7 +88,7 @@ export default function PrelovedMinePage() {
   };
 
   return (
-    <div className="content-max animate-fade-in">
+    <div className="w-full animate-fade-in">
       {/* Header */}
       <section className="hero bg-charcoal rounded-2xl p-8 relative overflow-hidden mb-8">
         <div className="hero-blob w-[300px] h-[300px] bg-terracotta opacity-10 absolute rounded-full -top-[100px] -right-[80px]"></div>
@@ -124,16 +124,17 @@ export default function PrelovedMinePage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-6">
         {isLoading ? (
           <div className="col-span-full py-20 text-center text-charcoal-60 flex flex-col items-center">
             <svg className="animate-spin h-8 w-8 mb-4 text-terracotta" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
             Memuat data...
           </div>
         ) : currentData && currentData.length > 0 ? (
-          currentData.map((item: any) => (
+          currentData.map((item: any, idx: number) => (
             <PrelovedCard 
               key={item.id}
+              featured={idx < 2}
               user={{ 
                 name: item.user?.name || "Kamu", 
                 avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", 
@@ -146,7 +147,9 @@ export default function PrelovedMinePage() {
               price={item.price}
               maxPrice={item.max_price}
               condition={item.condition}
-              imageUrl={item.image_url}
+              category={item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : undefined}
+              imageUrl={item.primary_image_url}
+              images={item.images}
               description={item.description}
               actionText="Lihat Detail"
               isOwner={true}
