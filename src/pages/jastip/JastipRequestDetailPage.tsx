@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCategories } from "@/hooks/useCategory";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +25,17 @@ export default function JastipRequestDetailPage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const { data: item, isLoading } = useJastipRequestDetail(id || "");
+  const { data: categories } = useCategories();
   const deleteMutation = useDeleteJastipRequest();
+
+  const getCategoryName = () => {
+    if (item?.category) return item.category.name;
+    if (item?.category_id && categories) {
+      const cat = categories.find(c => c.id === item.category_id);
+      if (cat) return cat.name;
+    }
+    return "Umum";
+  };
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -112,7 +123,7 @@ export default function JastipRequestDetailPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kategori</h3>
-                  <p className="text-charcoal font-semibold text-lg">{item.category?.name || "Umum"}</p>
+                  <p className="text-charcoal font-semibold text-lg">{getCategoryName()}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Dibuat Pada</h3>

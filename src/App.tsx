@@ -64,9 +64,11 @@ export default function App() {
         <Route path="/jastip" element={<Navigate to="/jastip/listings" replace />} />
         <Route path="/jastip/listings" element={<ProtectedRoute><MainLayout><JastipListingsPage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/listings/create" element={<ProtectedRoute><MainLayout><JastipCreatePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/jastip/listings/edit/:id" element={<ProtectedRoute><MainLayout><JastipCreatePage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/listings/:id" element={<ProtectedRoute><MainLayout><JastipDetailPage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/requests" element={<ProtectedRoute><MainLayout><JastipRequestsPage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/requests/create" element={<ProtectedRoute><MainLayout><JastipRequestCreatePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/jastip/requests/edit/:id" element={<ProtectedRoute><MainLayout><JastipRequestCreatePage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/requests/:id" element={<ProtectedRoute><MainLayout><JastipRequestDetailPage /></MainLayout></ProtectedRoute>} />
         <Route path="/jastip/mine" element={<ProtectedRoute><MainLayout><JastipMinePage /></MainLayout></ProtectedRoute>} />
 
@@ -74,9 +76,11 @@ export default function App() {
         <Route path="/preloved" element={<Navigate to="/preloved/listings" replace />} />
         <Route path="/preloved/listings" element={<ProtectedRoute><MainLayout><PrelovedListingsPage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/listings/create" element={<ProtectedRoute><MainLayout><PrelovedCreatePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/preloved/listings/edit/:id" element={<ProtectedRoute><MainLayout><PrelovedCreatePage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/listings/:id" element={<ProtectedRoute><MainLayout><PrelovedDetailPage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/requests" element={<ProtectedRoute><MainLayout><PrelovedRequestsPage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/requests/create" element={<ProtectedRoute><MainLayout><PrelovedRequestCreatePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/preloved/requests/edit/:id" element={<ProtectedRoute><MainLayout><PrelovedRequestCreatePage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/requests/:id" element={<ProtectedRoute><MainLayout><PrelovedRequestDetailPage /></MainLayout></ProtectedRoute>} />
         <Route path="/preloved/mine" element={<ProtectedRoute><MainLayout><PrelovedMinePage /></MainLayout></ProtectedRoute>} />
 

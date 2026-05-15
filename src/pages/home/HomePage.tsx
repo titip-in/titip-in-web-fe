@@ -7,6 +7,7 @@ import { usePrelovedListings } from "@/hooks/usePreloved";
 import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
+import { useCategories } from "@/hooks/useCategory";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
@@ -15,9 +16,21 @@ export default function HomePage() {
   const { data: jastipListings, isLoading: isLoadingJastip } = useJastipListings();
   const { data: jastipRequests } = useJastipRequests();
   const { data: prelovedListings, isLoading: isLoadingPreloved } = usePrelovedListings();
+  const { data: categories } = useCategories();
 
   const [selectedJastipCat, setSelectedJastipCat] = useState<number | null>(null);
   const [selectedPrelovedCat, setSelectedPrelovedCat] = useState<number | null>(null);
+
+  const getCategoryTag = (item: any) => {
+    if (item.category) {
+      return `${item.category.icon || ''} ${item.category.name}`.trim();
+    }
+    if (item.category_id && categories) {
+      const cat = categories.find(c => c.id === item.category_id);
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
+    }
+    return "Umum";
+  };
 
   const activeJastip = React.useMemo(() => 
     (jastipListings?.filter(l => l.status === 'ACTIVE' && (selectedJastipCat === null || l.category_id === selectedJastipCat)) || []),
@@ -88,9 +101,9 @@ export default function HomePage() {
       </div>
 
       {/* ── JASTIP + RIGHT PANEL ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Jastip List */}
-        <section>
+        <section className="lg:col-span-2">
           <div className="section-header flex justify-between items-center mb-5">
             <div>
               <h2 className="section-title font-display text-[22px] font-medium text-charcoal">Jastip Tersedia</h2>
@@ -121,7 +134,7 @@ export default function HomePage() {
                   timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                   status={listing.status}
                   route={{ from: listing.from_loc, to: listing.to_loc }}
-                  tags={[listing.category ? `${listing.category.icon || ''} ${listing.category.name}`.trim() : "Umum"]}
+                  tags={[getCategoryTag(listing)]}
                   deadline={new Date(listing.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
                   imageUrl={listing.primary_image_url}
                   images={listing.images}
@@ -138,7 +151,7 @@ export default function HomePage() {
         </section>
 
         {/* Right Panel — Quick Actions + Activity */}
-        <aside className="flex flex-col gap-6">
+        <aside className="flex flex-col gap-6 lg:col-span-1">
           {/* Quick Actions */}
           <div className="bg-elevated rounded-xl shadow-sm border border-subtle p-5">
             <h3 className="font-display text-[16px] font-medium text-charcoal mb-4">Aksi Cepat</h3>
@@ -162,7 +175,7 @@ export default function HomePage() {
           <div className="bg-elevated rounded-xl shadow-sm border border-subtle overflow-hidden">
             <div className="px-5 py-4 border-b border-subtle flex justify-between items-center">
               <h3 className="font-display text-[16px] font-medium text-charcoal">Aktivitas Terbaru</h3>
-              <span className="text-[11px] font-semibold text-charcoal-60 bg-cream-dark rounded-full py-1 px-3 cursor-pointer">Semua</span>
+              <span onClick={() => navigate('/jastip/listings')} className="text-[11px] font-semibold text-charcoal-60 bg-cream-dark rounded-full py-1 px-3 cursor-pointer hover:bg-charcoal-10 transition-colors">Semua</span>
             </div>
             <div className="px-5 py-3">
               {jastipListings?.slice(0, 4).map((l, i) => (
@@ -179,6 +192,41 @@ export default function HomePage() {
               )) || (
                 <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
               )}
+            </div>
+          </div>
+
+          {/* Trust Badge / Security Info */}
+          <div className="bg-sage-pale/60 border border-sage/20 rounded-xl p-4 flex items-start gap-3 mt-auto">
+            <div className="w-8 h-8 rounded-full bg-sage/20 flex items-center justify-center shrink-0 text-[16px]">
+              🛡️
+            </div>
+            <div>
+              <h4 className="font-semibold text-[12px] text-sage-dark mb-0.5">Transaksi Lebih Aman</h4>
+              <p className="text-[11px] text-sage-dark/80 leading-[1.4]">Selalu cek detail barang & sepakati COD di area kampus untuk keamanan bersama.</p>
+            </div>
+          </div>
+
+          {/* CTA Promo Banner */}
+          <div className="bg-gradient-to-br from-terracotta to-terracotta-dark rounded-xl shadow-sm overflow-hidden relative p-6 text-white flex-1 flex flex-col justify-center">
+            {/* Decorative blobs */}
+            <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-charcoal/20 rounded-full blur-2xl"></div>
+            <div className="relative z-10">
+              <span className="inline-block px-2 py-1 bg-white/20 rounded mb-3 text-[9px] font-bold tracking-wider uppercase text-white backdrop-blur-sm">
+                TIPS CUAN 💸
+              </span>
+              <h3 className="font-display text-[20px] font-medium leading-tight mb-2">
+                Barang nganggur<br/>di kos?
+              </h3>
+              <p className="text-[13px] text-white/85 mb-5 leading-[1.5]">
+                Ubah jadi uang saku tambahan. Upload ke preloved marketplace, langsung dibeli teman kampus!
+              </p>
+              <button 
+                onClick={() => navigate('/preloved/listings/create')} 
+                className="w-full py-2.5 bg-white text-terracotta-dark text-[13px] font-bold rounded-full shadow-sm hover:bg-cream transition-transform duration-200 hover:-translate-y-0.5 active:scale-95 mt-auto"
+              >
+                Mulai Jual Barang
+              </button>
             </div>
           </div>
         </aside>
@@ -202,7 +250,7 @@ export default function HomePage() {
           onSelect={setSelectedPrelovedCat} 
         />
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
           {isLoadingPreloved ? (
             <div className="col-span-full py-10 text-center text-charcoal-60 flex items-center justify-center gap-3">
               <svg className="animate-spin h-5 w-5 text-terracotta" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -212,14 +260,14 @@ export default function HomePage() {
             activePreloved.slice(0, 8).map((listing, idx) => (
               <PrelovedCard 
                 key={listing.id}
-                featured={idx === 0}
+                featured={idx < 2}
                 user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
                 timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                 status={listing.status}
                 title={listing.title}
                 price={listing.price}
                 condition={listing.condition}
-                category={listing.category ? `${listing.category.icon || ''} ${listing.category.name}`.trim() : undefined}
+                category={getCategoryTag(listing)}
                 imageUrl={listing.primary_image_url}
                 images={listing.images}
                 actionText="Cek Detail"

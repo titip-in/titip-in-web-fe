@@ -43,6 +43,7 @@ export default function PrelovedRequestsPage() {
               description={request.description}
               actionText="Jual Barang Ini"
               isOwner={request.user_id === user?.id}
+              hideImage={true}
               onClick={() => navigate(`/preloved/requests/${request.id}`)}
               onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
             />

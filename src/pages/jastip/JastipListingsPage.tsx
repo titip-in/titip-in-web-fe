@@ -4,12 +4,25 @@ import { JastipCard } from "@/components/home/JastipCard";
 import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useCategories } from "@/hooks/useCategory";
 
 export default function JastipListingsPage() {
   const { data: listings, isLoading } = useJastipListings();
+  const { data: categories } = useCategories();
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+
+  const getCategoryTag = (item: any) => {
+    if (item.category) {
+      return `${item.category.icon || ''} ${item.category.name}`.trim();
+    }
+    if (item.category_id && categories) {
+      const cat = categories.find(c => c.id === item.category_id);
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
+    }
+    return "Umum";
+  };
 
   const filteredListings = React.useMemo(() => {
     if (!listings) return [];
@@ -53,7 +66,7 @@ export default function JastipListingsPage() {
               timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
               status={listing.status}
               route={{ from: listing.from_loc, to: listing.to_loc }}
-              tags={[listing.category ? `${listing.category.icon || ''} ${listing.category.name}`.trim() : "Umum"]}
+              tags={[getCategoryTag(listing)]}
               deadline={new Date(listing.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
               imageUrl={listing.primary_image_url}
               images={listing.images}

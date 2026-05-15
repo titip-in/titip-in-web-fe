@@ -15,7 +15,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="topbar bg-charcoal flex items-center px-6 gap-4 sticky top-0 z-[300]" style={{ gridColumn: "1 / -1", height: "var(--topbar-h)" }}>
+    <header className="topbar bg-charcoal flex items-center px-6 gap-4 z-[300]" style={{ gridColumn: "1 / -1", height: "var(--topbar-h)" }}>
       {/* Logo */}
       <Link to="/" className="topbar-logo font-display text-[22px] italic font-normal text-cream tracking-tight whitespace-nowrap">
         Titip.in
@@ -24,7 +24,7 @@ export function Topbar() {
       <div className="topbar-divider w-[1px] h-[22px] bg-cream/10"></div>
 
       <div className="topbar-breadcrumb flex items-center gap-2 text-[13px] text-cream/40">
-        <span>Beranda</span>
+        <span>Buat dan Cari Jastip-Preloved</span>
       </div>
 
       <div className="topbar-actions flex items-center gap-3 ml-auto">
@@ -32,11 +32,11 @@ export function Topbar() {
           <svg className="topbar-search-icon text-[14px] opacity-50 text-cream w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari jastip atau barang..." 
+            placeholder="Cari jastip atau barang..."
             className="topbar-search-text text-[13px] text-cream bg-transparent border-none outline-none w-full placeholder:text-cream/35 font-body"
           />
           <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold hidden sm:inline">↵</span>

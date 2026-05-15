@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { ListingPlaceholder } from "../ui/ListingPlaceholder";
 
 interface CardImageCarouselProps {
   images: string | string[];
@@ -14,10 +15,11 @@ export function CardImageCarousel({ images, alt = "Card Image", className = "", 
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if (isHovered && imageUrls.length > 1) {
+    if (isHovered && imageUrls.length > 1 && !hasError) {
       intervalRef.current = setInterval(() => {
         setActiveIndex((prev) => (prev + 1) % imageUrls.length);
       }, 1500); // Cycle every 1.5s on hover
@@ -29,14 +31,10 @@ export function CardImageCarousel({ images, alt = "Card Image", className = "", 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isHovered, imageUrls.length]);
+  }, [isHovered, imageUrls.length, hasError]);
 
-  if (!imageUrls || imageUrls.length === 0) {
-    return (
-      <div className={`w-full h-full flex items-center justify-center text-[48px] bg-cream-dark ${className}`}>
-        🛍️
-      </div>
-    );
+  if (!imageUrls || imageUrls.length === 0 || hasError) {
+    return <ListingPlaceholder className={className} />;
   }
 
   return (
@@ -56,6 +54,7 @@ export function CardImageCarousel({ images, alt = "Card Image", className = "", 
               alt={`${alt} ${idx + 1}`} 
               className="w-full h-full object-cover transition-transform duration-1000"
               style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
+              onError={() => setHasError(true)}
             />
           </div>
         ))}

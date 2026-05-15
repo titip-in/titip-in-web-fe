@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ListingImage } from "@/types/api";
+import { ListingPlaceholder } from "./ListingPlaceholder";
 
 interface DetailImageGalleryProps {
   images: string | string[] | ListingImage[]; // Comma separated string, array of strings, or array of ListingImage
@@ -20,15 +21,10 @@ export function DetailImageGallery({ images, alt = "Product Image" }: DetailImag
   }, [images]);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [hasError, setHasError] = useState(false);
 
-  if (!imageUrls || imageUrls.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-charcoal-20 bg-cream-dark">
-        <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-        </svg>
-      </div>
-    );
+  if (!imageUrls || imageUrls.length === 0 || hasError) {
+    return <ListingPlaceholder iconSize={48} />;
   }
 
   const nextSlide = () => setActiveIndex((prev) => (prev + 1) % imageUrls.length);
@@ -48,6 +44,7 @@ export function DetailImageGallery({ images, alt = "Product Image" }: DetailImag
                 src={url} 
                 alt={`${alt} ${idx + 1}`} 
                 className="w-full h-full object-cover"
+                onError={() => setHasError(true)}
               />
             </div>
           ))}

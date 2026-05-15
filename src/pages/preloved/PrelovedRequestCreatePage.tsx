@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreatePrelovedRequest } from "@/hooks/usePreloved";
+import { useCreatePrelovedRequest, usePrelovedRequestDetail, useUpdatePrelovedRequest } from "@/hooks/usePreloved";
 import { useCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
 
 export default function PrelovedRequestCreatePage() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -15,29 +18,56 @@ export default function PrelovedRequestCreatePage() {
   
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedRequest();
+  const updateMutation = useUpdatePrelovedRequest(id || "");
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: requestDetail, isLoading: isLoadingDetail } = usePrelovedRequestDetail(id || "");
+
+  useEffect(() => {
+    if (isEdit && requestDetail) {
+      setTitle(requestDetail.title);
+      setDescription(requestDetail.description || "");
+      setMaxPrice(requestDetail.max_price?.toString() || "");
+      setCategoryId(requestDetail.category_id || null);
+    }
+  }, [isEdit, requestDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createMutation.mutateAsync({
+      const payload = {
         category_id: categoryId,
         title: title,
         description: description,
         max_price: parseInt(maxPrice, 10),
-        status: "OPEN"
-      });
-      navigate('/preloved/requests');
+        status: isEdit && requestDetail ? requestDetail.status : "OPEN"
+      };
+
+      if (isEdit) {
+        await updateMutation.mutateAsync(payload);
+        toast.success("Request preloved berhasil diperbarui.");
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast.success("Request preloved berhasil dibuat.");
+      }
+      navigate('/preloved/mine');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Gagal membuat request preloved.");
+      toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} request preloved.`);
     }
   };
+
+  if (isEdit && isLoadingDetail) {
+    return (
+      <div className="flex justify-center py-20 text-charcoal-60">
+        Memuat data request...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[600px] mx-auto py-8 animate-fade-in">
       <div className="mb-8">
-        <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">Cari Barang Preloved</h1>
-        <p className="text-[15px] text-charcoal-60">Beritahu orang lain barang apa yang sedang kamu cari.</p>
+        <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">{isEdit ? 'Edit Request Preloved' : 'Cari Barang Preloved'}</h1>
+        <p className="text-[15px] text-charcoal-60">{isEdit ? 'Perbarui informasi barang yang kamu cari.' : 'Beritahu orang lain barang apa yang sedang kamu cari.'}</p>
       </div>
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
@@ -114,9 +144,9 @@ export default function PrelovedRequestCreatePage() {
           <Button 
             type="submit" 
             className="rounded-full bg-charcoal hover:bg-charcoal-80 text-white"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || updateMutation.isPending}
           >
-            {createMutation.isPending ? "Mengirim..." : "Posting Request"}
+            {createMutation.isPending || updateMutation.isPending ? "Menyimpan..." : (isEdit ? "Simpan Perubahan" : "Posting Request")}
           </Button>
         </div>
       </form>

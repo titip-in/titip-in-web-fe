@@ -42,6 +42,7 @@ export default function JastipRequestsPage() {
               notes={request.notes || undefined}
               actionText="Ambil Request"
               isOwner={request.user_id === user?.id}
+              hideImage={true}
               onClick={() => navigate(`/jastip/requests/${request.id}`)}
               onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
             />
