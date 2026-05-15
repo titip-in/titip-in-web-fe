@@ -39,8 +39,19 @@ export function Topbar() {
             placeholder="Cari jastip atau barang..." 
             className="topbar-search-text text-[13px] text-cream bg-transparent border-none outline-none w-full placeholder:text-cream/35 font-body"
           />
-          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold">↵</span>
+          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold hidden sm:inline">↵</span>
         </form>
+
+        {/* Mobile search button — visible only when search bar is hidden */}
+        <Link
+          to="/search"
+          className="topbar-mobile-search w-9 h-9 rounded-md bg-white/5 border-none flex items-center justify-center cursor-pointer text-cream/60 hover:bg-white/10 transition-colors sm:hidden"
+          aria-label="Cari"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </Link>
 
         <button className="topbar-icon-btn w-9 h-9 rounded-md bg-white/5 border-none flex items-center justify-center cursor-pointer relative transition-colors duration-100 text-cream/60 hover:bg-white/10">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +60,7 @@ export function Topbar() {
           <span className="topbar-notif-dot absolute top-[6px] right-[7px] w-[7px] h-[7px] bg-terracotta rounded-full border-2 border-charcoal"></span>
         </button>
 
-        <Link to="/profile" className="topbar-avatar w-[34px] h-[34px] rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[13px] font-bold text-white cursor-pointer border-2 border-cream/15 transition-colors duration-100 hover:border-cream/35 overflow-hidden">
+        <Link to="/profile" className="topbar-avatar w-[34px] h-[34px] rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[13px] font-bold text-white cursor-pointer border-2 border-cream/15 transition-colors duration-100 hover:border-cream/35 overflow-hidden flex-shrink-0">
           {user?.avatar_url ? (
             <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
           ) : (

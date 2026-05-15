@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Package, ShoppingBag } from "lucide-react";
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
   const updateMutation = useUpdateProfile();
   const setAuthUser = useAuthStore((state) => state.setAuth);
   const token = useAuthStore((state) => state.token);
+  const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [waNumber, setWaNumber] = useState("");
@@ -124,6 +127,38 @@ export default function ProfilePage() {
           </Button>
         </div>
       </form>
+
+      <div className="mt-8 mb-4">
+        <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Aktivitas Saya</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div 
+            onClick={() => navigate('/jastip/mine')}
+            className="bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-charcoal-30 transition-all duration-200 flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-full bg-sage-pale text-sage flex items-center justify-center flex-shrink-0">
+              <Package size={24} />
+            </div>
+            <div>
+              <div className="font-medium text-charcoal text-[15px]">Jastip Saya</div>
+              <div className="text-[13px] text-charcoal-60 mt-0.5">Kelola listing & request jastip</div>
+            </div>
+          </div>
+          
+          <div 
+            onClick={() => navigate('/preloved/mine')}
+            className="bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-charcoal-30 transition-all duration-200 flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-full bg-terracotta-pale text-terracotta flex items-center justify-center flex-shrink-0">
+              <ShoppingBag size={24} />
+            </div>
+            <div>
+              <div className="font-medium text-charcoal text-[15px]">Preloved Saya</div>
+              <div className="text-[13px] text-charcoal-60 mt-0.5">Kelola barang & request preloved</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
