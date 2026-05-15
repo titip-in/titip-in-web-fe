@@ -173,6 +173,13 @@ export default function PrelovedDetailPage() {
                 </Button>
 
                 <Button 
+                  onClick={() => navigate(`/preloved/listings/edit/${id}`)}
+                  className="w-full bg-cream/10 border border-white/20 text-cream hover:bg-white/10 rounded-full py-6 font-bold mt-2"
+                >
+                  <span className="flex items-center gap-2">✏️ Edit Detail Barang</span>
+                </Button>
+
+                <Button 
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="w-full bg-transparent border border-red text-red hover:bg-red/10 rounded-full py-6 font-bold mt-2"
                 >
@@ -207,10 +214,44 @@ export default function PrelovedDetailPage() {
                 </Button>
               </div>
             ) : (
-              <p className="text-center text-xs text-charcoal-40 italic">
+              <p className="text-center text-[13px] text-charcoal-40 italic">
                 Ini adalah listing Anda. Gunakan panel di atas untuk mengelola.
               </p>
             )}
+          </div>
+
+          {/* Safety Panel */}
+          <div className="bg-sage-pale/40 border border-sage/20 rounded-2xl p-6">
+            <h4 className="font-semibold text-sage-dark text-sm mb-3 flex items-center gap-2">
+              <span className="text-lg">🛡️</span> Tips Keamanan
+            </h4>
+            <ul className="space-y-3">
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Gunakan fitur Chat WhatsApp untuk diskusi detail barang.
+              </li>
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Lakukan pembayaran secara aman (COD di kampus sangat disarankan).
+              </li>
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Selalu cek kondisi barang saat bertemu secara langsung.
+              </li>
+            </ul>
+          </div>
+
+          {/* Promo/Help Panel */}
+          <div className="bg-gradient-to-br from-terracotta/10 to-gold/10 border border-terracotta/10 rounded-2xl p-6 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-16 h-16 bg-terracotta/5 rounded-full blur-xl"></div>
+            <h4 className="font-semibold text-terracotta text-sm mb-2">Butuh Bantuan?</h4>
+            <p className="text-[12px] text-charcoal-60 mb-4">Punya kendala dengan barang ini? Hubungi tim support Titip.in.</p>
+            <button 
+              onClick={() => window.open('https://wa.me/6285750583867', '_blank')}
+              className="text-[12px] font-bold text-terracotta hover:underline"
+            >
+              Hubungi Bantuan →
+            </button>
           </div>
         </div>
       </div>

@@ -146,7 +146,6 @@ export default function JastipRequestDetailPage() {
                   <div className="text-xs text-cream/40 uppercase tracking-widest mb-1">Status Saat Ini</div>
                   <div className="font-bold text-lg text-gold">{item.status}</div>
                 </div>
-                
                 {item.status === 'OPEN' ? (
                   <Button 
                     onClick={() => handleStatusChange('CLOSED')}
@@ -162,6 +161,13 @@ export default function JastipRequestDetailPage() {
                     <span className="flex items-center gap-2"><Play size={18} fill="currentColor" /> Buka Kembali</span>
                   </Button>
                 )}
+
+                <Button 
+                  onClick={() => navigate(`/jastip/requests/edit/${id}`)}
+                  className="w-full bg-cream/10 border border-white/20 text-cream hover:bg-white/10 rounded-full py-6 font-bold mt-2"
+                >
+                  <span className="flex items-center gap-2">✏️ Edit Detail Request</span>
+                </Button>
 
                 <Button 
                   onClick={() => setIsDeleteDialogOpen(true)}
@@ -198,10 +204,44 @@ export default function JastipRequestDetailPage() {
             )}
             
             {isOwner && (
-              <p className="text-center text-xs text-charcoal-40 italic">
+              <p className="text-center text-[13px] text-charcoal-40 italic">
                 Ini adalah request Anda. Gunakan panel di atas untuk mengelola.
               </p>
             )}
+          </div>
+
+          {/* Safety Panel */}
+          <div className="bg-sage-pale/40 border border-sage/20 rounded-2xl p-6">
+            <h4 className="font-semibold text-sage-dark text-sm mb-3 flex items-center gap-2">
+              <span className="text-lg">🛡️</span> Tips Keamanan
+            </h4>
+            <ul className="space-y-3">
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Gunakan fitur Chat WhatsApp untuk diskusi detail barang.
+              </li>
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Lakukan pembayaran secara aman (COD di kampus sangat disarankan).
+              </li>
+              <li className="text-[12px] text-sage-dark/80 flex gap-2">
+                <span className="font-bold">•</span>
+                Selalu cek kondisi barang saat bertemu secara langsung.
+              </li>
+            </ul>
+          </div>
+
+          {/* Promo/Help Panel */}
+          <div className="bg-gradient-to-br from-terracotta/10 to-gold/10 border border-terracotta/10 rounded-2xl p-6 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-16 h-16 bg-terracotta/5 rounded-full blur-xl"></div>
+            <h4 className="font-semibold text-terracotta text-sm mb-2">Butuh Bantuan?</h4>
+            <p className="text-[12px] text-charcoal-60 mb-4">Punya kendala dengan request ini? Hubungi tim support Titip.in.</p>
+            <button 
+              onClick={() => window.open('https://wa.me/6285750583867', '_blank')}
+              className="text-[12px] font-bold text-terracotta hover:underline"
+            >
+              Hubungi Bantuan →
+            </button>
           </div>
         </div>
       </div>
