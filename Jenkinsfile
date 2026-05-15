@@ -65,7 +65,7 @@ pipeline {
                                 docker stop frontend-web || true
                                 docker rm frontend-web || true
                                 
-                                docker run -d --name frontend-web -p 80:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                                docker run -d --name frontend-web -p 3001:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
                                 
                                 docker image prune -f
                             '
