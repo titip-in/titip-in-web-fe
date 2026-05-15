@@ -34,36 +34,36 @@ export default function HomePage() {
   return (
     <div className="w-full animate-fade-in space-y-8">
       {/* ── HERO ── */}
-      <section className="hero w-full bg-charcoal rounded-2xl p-12 relative overflow-hidden min-h-[280px] flex items-center">
+      <section className="hero w-full bg-charcoal rounded-2xl p-6 sm:p-8 lg:p-12 relative overflow-hidden min-h-[220px] sm:min-h-[260px] lg:min-h-[280px] flex items-center">
         <div className="hero-blob w-[200px] h-[200px] bg-sage opacity-10 absolute rounded-full -top-[60px] -right-[40px]"></div>
         <div className="hero-blob w-[120px] h-[120px] bg-terracotta opacity-[0.12] absolute rounded-full -bottom-[30px] right-[200px]"></div>
         <div className="hero-blob w-[80px] h-[80px] bg-gold opacity-[0.08] absolute rounded-full top-[20px] right-[160px]"></div>
         
         <div className="hero-content relative z-[1] max-w-[560px]">
           <div className="hero-tag text-[11px] font-semibold tracking-[2px] text-sage uppercase mb-3">● Tersedia Sekarang</div>
-          <h1 className="hero-title font-display text-[42px] font-light italic text-cream leading-[1.1] mb-3">
+          <h1 className="hero-title font-display text-[28px] sm:text-[34px] lg:text-[42px] font-light italic text-cream leading-[1.1] mb-3">
             Jastip & Preloved<br/>di Malang
           </h1>
-          <p className="hero-desc text-[15px] text-cream/45 leading-[1.6] mb-6 max-w-[440px]">
+          <p className="hero-desc text-[13px] sm:text-[14px] lg:text-[15px] text-cream/45 leading-[1.6] mb-4 sm:mb-6 max-w-[440px]">
             Platform hyperlocal untuk mahasiswa Malang. Temukan jastip terdekat dan barang preloved dengan mudah — langsung hubungi via WhatsApp.
           </p>
-          <div className="hero-actions flex gap-3">
+          <div className="hero-actions flex flex-wrap gap-2 sm:gap-3">
             <button 
               onClick={() => navigate('/jastip/listings/create')}
-              className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md active:scale-[0.97] flex items-center gap-2"
+              className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md active:scale-[0.97] flex items-center gap-2"
             >
               📦 Buka Jastip
             </button>
             <button 
               onClick={() => navigate('/preloved/listings/create')}
-              className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/12 rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out active:scale-[0.97] flex items-center gap-2"
+              className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/12 rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out active:scale-[0.97] flex items-center gap-2"
             >
               🛍️ Jual Barang
             </button>
           </div>
         </div>
 
-        <div className="hero-stats absolute right-10 top-1/2 -translate-y-1/2 flex gap-4 z-[1] hidden lg:flex">
+        <div className="hero-stats absolute right-6 lg:right-10 top-1/2 -translate-y-1/2 flex gap-3 lg:gap-4 z-[1] hidden md:flex">
           <div className="hero-stat bg-cream/[0.06] border border-cream/[0.08] rounded-xl p-5 text-center min-w-[120px] backdrop-blur-[8px]">
             <div className="hero-stat-num font-display text-[36px] font-light text-cream leading-[1] mb-1">{activeJastip.length}</div>
             <div className="hero-stat-label text-[10px] text-cream/40 font-medium tracking-[0.5px]">Jastip Aktif</div>
@@ -80,7 +80,7 @@ export default function HomePage() {
       </section>
 
       {/* ── STATS ── */}
-      <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <StatCard icon="📦" iconBgClass="bg-sage-pale text-sage-dark" label="Jastip Aktif" value={activeJastip.length.toString()} delta={{ value: "Diperbarui hari ini", isUp: true }} />
         <StatCard icon="🛍️" iconBgClass="bg-terracotta-pale text-terracotta-dark" label="Preloved Dijual" value={activePreloved.length.toString()} delta={{ value: "Banyak pilihan", isUp: true }} />
         <StatCard icon="📍" iconBgClass="bg-gold-pale text-gold-dark" label="Request Terbuka" value={openRequests.length.toString()} delta={{ value: "Siap diambil", isUp: true }} />

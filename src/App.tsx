@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { Toaster } from '@/components/ui/sonner'
+import LandingPage from '@/pages/landing/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import HomePage from '@/pages/home/HomePage'
@@ -34,7 +35,7 @@ import { MainLayout } from '@/components/layout/MainLayout'
 // Guard untuk route yang butuh login
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (!isAuthenticated) return <Navigate to="/landing" replace />
   return <>{children}</>
 }
 
@@ -49,11 +50,14 @@ export default function App() {
   return (
     <>
       <Routes>
+        {/* Landing page — public, first impression */}
+        <Route path="/landing" element={<GuestRoute><LandingPage /></GuestRoute>} />
+
         {/* Auth routes */}
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
 
-        {/* Protected routes */}
+        {/* Protected routes — dashboard home */}
         <Route path="/" element={<ProtectedRoute><MainLayout><HomePage /></MainLayout></ProtectedRoute>} />
 
         {/* Jastip Routes */}
