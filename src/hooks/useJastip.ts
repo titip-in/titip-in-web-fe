@@ -143,6 +143,21 @@ export function useCreateJastipRequest() {
   });
 }
 
+export function useUpdateJastipRequest(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<CreateJastipRequestPayload>) => {
+      const { data } = await api.put<ApiResponse<JastipRequest>>(`/v1/jastip/requests/${id}`, payload);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: jastipKeys.requests() });
+      queryClient.invalidateQueries({ queryKey: jastipKeys.requestDetail(id) });
+      queryClient.invalidateQueries({ queryKey: jastipKeys.myRequests() });
+    },
+  });
+}
+
 export function useDeleteJastipRequest() {
   const queryClient = useQueryClient();
   return useMutation({

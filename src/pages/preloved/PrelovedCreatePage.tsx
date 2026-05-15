@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreatePrelovedListing } from "@/hooks/usePreloved";
+import { useCreatePrelovedListing, usePrelovedListingDetail, useUpdatePrelovedListing } from "@/hooks/usePreloved";
 import { useCategories } from "@/hooks/useCategory";
 import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
 import { toast } from "sonner";
 
 export default function PrelovedCreatePage() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -19,31 +22,63 @@ export default function PrelovedCreatePage() {
   
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedListing();
+  const updateMutation = useUpdatePrelovedListing(id || "");
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: listingDetail, isLoading: isLoadingDetail } = usePrelovedListingDetail(id || "");
+
+  useEffect(() => {
+    if (isEdit && listingDetail) {
+      setTitle(listingDetail.title);
+      setDescription(listingDetail.description || "");
+      setPrice(listingDetail.price?.toString() || "");
+      setCondition(listingDetail.condition as any);
+      setCategoryId(listingDetail.category_id || null);
+      if (listingDetail.images) {
+        setImageUrls(listingDetail.images.map(img => img.image_url));
+      }
+      setPrimaryImageUrl(listingDetail.primary_image_url);
+    }
+  }, [isEdit, listingDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createMutation.mutateAsync({
+      const payload = {
         category_id: categoryId,
         title,
         description,
         price: parseInt(price, 10),
         condition,
-        status: "AVAILABLE",
+        status: isEdit && listingDetail ? listingDetail.status : "AVAILABLE",
         primary_image_url: primaryImageUrl || (imageUrls.length > 0 ? imageUrls[0] : null),
         images: imageUrls
-      });
-      navigate('/preloved/listings');
+      };
+
+      if (isEdit) {
+        await updateMutation.mutateAsync(payload);
+        toast.success("Listing preloved berhasil diperbarui.");
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast.success("Listing preloved berhasil dibuat.");
+      }
+      navigate('/preloved/mine');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Gagal membuat listing preloved.");
+      toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} listing preloved.`);
     }
   };
 
+  if (isEdit && isLoadingDetail) {
+    return (
+      <div className="flex justify-center py-20 text-charcoal-60">
+        Memuat data barang...
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[600px] mx-auto py-8">
-      <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">Jual Barang Preloved</h1>
-      <p className="text-[15px] text-charcoal-60 mb-8">Jual barang bekasmu yang masih layak pakai ke teman-teman kampus.</p>
+      <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">{isEdit ? 'Edit Barang Preloved' : 'Jual Barang Preloved'}</h1>
+      <p className="text-[15px] text-charcoal-60 mb-8">{isEdit ? 'Perbarui informasi barang yang kamu jual.' : 'Jual barang bekasmu yang masih layak pakai ke teman-teman kampus.'}</p>
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
@@ -144,9 +179,9 @@ export default function PrelovedCreatePage() {
           <Button 
             type="submit" 
             className="rounded-full bg-sage hover:bg-sage-dark text-white"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || updateMutation.isPending}
           >
-            {createMutation.isPending ? "Menyimpan..." : "Posting Barang"}
+            {createMutation.isPending || updateMutation.isPending ? "Menyimpan..." : (isEdit ? "Simpan Perubahan" : "Posting Barang")}
           </Button>
         </div>
       </form>

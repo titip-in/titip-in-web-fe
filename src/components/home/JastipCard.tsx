@@ -2,6 +2,7 @@ import React from "react";
 import { CardImageCarousel } from "./CardImageCarousel";
 import { ListingImage } from "@/types/api";
 import { Pause, Play, Trash2, ArrowRight } from "lucide-react";
+import { ListingPlaceholder } from "../ui/ListingPlaceholder";
 
 interface JastipCardProps {
   user: {
@@ -26,12 +27,14 @@ interface JastipCardProps {
   images?: ListingImage[];
   // CRUD props for Mine pages
   onStatusChange?: (newStatus: string) => void;
+  onEdit?: () => void;
   onDelete?: () => void;
   isOwner?: boolean;
+  hideImage?: boolean;
 }
 
 export function JastipCard({ 
-  user, timeAgo, status, route, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onDelete, isOwner 
+  user, timeAgo, status, route, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onEdit, onDelete, isOwner, hideImage 
 }: JastipCardProps) {
   const isAvailable = status === "ACTIVE" || status === "Aktif" || status === "OPEN";
 
@@ -49,13 +52,21 @@ export function JastipCard({
       onClick={onClick}
       className="jcard bg-elevated rounded-xl shadow-sm border border-subtle overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 flex flex-col h-full"
     >
-      {imageUrls.length > 0 && (
-        <div className="w-full h-36 bg-cream-dark relative shrink-0 overflow-hidden">
-          <CardImageCarousel 
-            images={imageUrls} 
-            alt="Tiket Jastip" 
-          />
-        </div>
+      {!hideImage && (
+        <>
+          {imageUrls.length > 0 ? (
+            <div className="w-full h-36 bg-cream-dark relative shrink-0 overflow-hidden">
+              <CardImageCarousel 
+                images={imageUrls} 
+                alt="Tiket Jastip" 
+              />
+            </div>
+          ) : (
+            <div className="w-full h-36 shrink-0">
+              <ListingPlaceholder />
+            </div>
+          )}
+        </>
       )}
 
       <div className="p-5 flex flex-col flex-grow">
@@ -125,6 +136,15 @@ export function JastipCard({
                 ) : (
                   <span className="flex items-center gap-1.5"><Play size={12} fill="currentColor" /> Buka Lagi</span>
                 )}
+              </button>
+            )}
+            {isOwner && onEdit && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="btn btn-sm rounded-full text-[11px] font-semibold py-2 px-3 bg-cream-dark text-charcoal hover:bg-charcoal-10 transition-colors"
+                title="Edit"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
             )}
             {isOwner && onDelete && (

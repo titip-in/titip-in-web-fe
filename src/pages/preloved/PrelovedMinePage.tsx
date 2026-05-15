@@ -15,6 +15,58 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { usePrelovedListingDetail, usePrelovedRequestDetail } from "@/hooks/usePreloved";
+import { useCategories } from "@/hooks/useCategory";
+
+function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
+  // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
+  const { data: listingDetail } = usePrelovedListingDetail(activeTab === 'listings' ? item.id : "");
+  const { data: requestDetail } = usePrelovedRequestDetail(activeTab === 'requests' ? item.id : "");
+  const { data: categories } = useCategories();
+
+  const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
+
+  const getCategoryName = () => {
+    if (fullData.category) {
+      return `${fullData.category.icon || ''} ${fullData.category.name}`.trim();
+    }
+    if (fullData.category_id && categories) {
+      const cat = categories.find(c => c.id === fullData.category_id);
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
+    }
+    return undefined;
+  };
+
+  return (
+    <PrelovedCard 
+      featured={idx < 2}
+      user={{ 
+        name: fullData.user?.name || "Kamu", 
+        avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", 
+        avatarInitial: (fullData.user?.name || "K").charAt(0).toUpperCase(),
+        wa_number: fullData.user?.wa_number 
+      }}
+      timeAgo={new Date(fullData.created_at || '').toLocaleDateString('id-ID')}
+      status={fullData.status}
+      title={fullData.title}
+      price={fullData.price}
+      maxPrice={fullData.max_price}
+      condition={fullData.condition}
+      category={getCategoryName()}
+      imageUrl={fullData.primary_image_url}
+      images={fullData.images}
+      description={fullData.description}
+      actionText="Lihat Detail"
+      isOwner={true}
+      onStatusChange={activeTab === 'listings' ? (newStatus) => onStatusChange(fullData.id, newStatus) : undefined}
+      onEdit={onEdit}
+      onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
+      onClick={onClick}
+      hideImage={activeTab === 'requests'}
+      onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+    />
+  );
+}
 
 export default function PrelovedMinePage() {
   const [activeTab, setActiveTab] = useState<"listings" | "requests">("listings");
@@ -132,31 +184,16 @@ export default function PrelovedMinePage() {
           </div>
         ) : currentData && currentData.length > 0 ? (
           currentData.map((item: any, idx: number) => (
-            <PrelovedCard 
+            <PrelovedMineCardWrapper 
               key={item.id}
-              featured={idx < 2}
-              user={{ 
-                name: item.user?.name || "Kamu", 
-                avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", 
-                avatarInitial: (item.user?.name || "K").charAt(0).toUpperCase(),
-                wa_number: item.user?.wa_number 
-              }}
-              timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
-              status={item.status}
-              title={item.title}
-              price={item.price}
-              maxPrice={item.max_price}
-              condition={item.condition}
-              category={item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : undefined}
-              imageUrl={item.primary_image_url}
-              images={item.images}
-              description={item.description}
-              actionText="Lihat Detail"
-              isOwner={true}
-              onStatusChange={activeTab === 'listings' ? (newStatus) => handleStatusChange(item.id, newStatus) : undefined}
-              onDelete={() => activeTab === 'listings' ? handleDeleteListing(item.id) : handleDeleteRequest(item.id)}
+              item={item}
+              idx={idx}
+              activeTab={activeTab}
+              onStatusChange={handleStatusChange}
+              onDeleteListing={handleDeleteListing}
+              onDeleteRequest={handleDeleteRequest}
               onClick={() => navigate(`/preloved/${activeTab === 'listings' ? 'listings' : 'requests'}/${item.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onEdit={() => navigate(`/preloved/${activeTab === 'listings' ? 'listings' : 'requests'}/edit/${item.id}`)}
             />
           ))
         ) : (

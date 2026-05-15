@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreateJastipListing } from "@/hooks/useJastip";
+import { useCreateJastipListing, useJastipListingDetail, useUpdateJastipListing } from "@/hooks/useJastip";
 import { useCategories } from "@/hooks/useCategory";
 import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
 import { toast } from "sonner";
 
 export default function JastipCreatePage() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const [fromLoc, setFromLoc] = useState("");
   const [toLoc, setToLoc] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -18,29 +21,64 @@ export default function JastipCreatePage() {
   
   const navigate = useNavigate();
   const createMutation = useCreateJastipListing();
+  const updateMutation = useUpdateJastipListing(id || "");
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: listingDetail, isLoading: isLoadingDetail } = useJastipListingDetail(id || "");
+
+  useEffect(() => {
+    if (isEdit && listingDetail) {
+      setFromLoc(listingDetail.from_loc);
+      setToLoc(listingDetail.to_loc);
+      // Format datetime-local requires YYYY-MM-DDThh:mm
+      if (listingDetail.deadline) {
+        const d = new Date(listingDetail.deadline);
+        setDeadline(d.toISOString().slice(0, 16));
+      }
+      setCategoryId(listingDetail.category_id || null);
+      if (listingDetail.images) {
+        setImageUrls(listingDetail.images.map(img => img.image_url));
+      }
+      setPrimaryImageUrl(listingDetail.primary_image_url);
+    }
+  }, [isEdit, listingDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createMutation.mutateAsync({
+      const payload = {
         category_id: categoryId,
         from_loc: fromLoc,
         to_loc: toLoc,
         deadline: new Date(deadline).toISOString(),
-        status: "ACTIVE",
+        status: isEdit && listingDetail ? listingDetail.status : "ACTIVE",
         primary_image_url: primaryImageUrl || (imageUrls.length > 0 ? imageUrls[0] : null),
         images: imageUrls
-      });
-      navigate('/jastip/listings');
+      };
+
+      if (isEdit) {
+        await updateMutation.mutateAsync(payload);
+        toast.success("Jastip berhasil diperbarui.");
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast.success("Jastip berhasil dibuat.");
+      }
+      navigate('/jastip/mine');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Gagal membuat jastip.");
+      toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} jastip.`);
     }
   };
 
+  if (isEdit && isLoadingDetail) {
+    return (
+      <div className="flex justify-center py-20 text-charcoal-60">
+        Memuat data jastip...
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-[600px] mx-auto py-8">
-      <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">Buka Jastip Baru</h1>
+      <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">{isEdit ? 'Edit Jastip' : 'Buka Jastip Baru'}</h1>
       <p className="text-[15px] text-charcoal-60 mb-8">Informasikan rute perjalananmu agar teman lain bisa menitip barang.</p>
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
@@ -77,7 +115,7 @@ export default function JastipCreatePage() {
               value={fromLoc}
               onChange={(e) => setFromLoc(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Surabaya"
+              placeholder="Contoh: Suhat"
             />
           </div>
           <div>
@@ -88,7 +126,7 @@ export default function JastipCreatePage() {
               value={toLoc}
               onChange={(e) => setToLoc(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Malang Raya"
+              placeholder="Contoh: Kampus UB"
             />
           </div>
           <div>
@@ -126,9 +164,9 @@ export default function JastipCreatePage() {
           <Button 
             type="submit" 
             className="rounded-full bg-sage hover:bg-sage-dark text-white"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || updateMutation.isPending}
           >
-            {createMutation.isPending ? "Menyimpan..." : "Posting Jastip"}
+            {createMutation.isPending || updateMutation.isPending ? "Menyimpan..." : (isEdit ? "Simpan Perubahan" : "Posting Jastip")}
           </Button>
         </div>
       </form>

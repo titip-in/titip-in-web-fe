@@ -54,7 +54,7 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="sidebar bg-charcoal p-5 border-r border-white/5 overflow-y-auto sticky top-[var(--topbar-h)] h-[calc(100vh-var(--topbar-h))] flex flex-col w-[var(--sidebar-w)]">
+    <aside className="sidebar bg-charcoal p-5 border-r border-white/5 overflow-y-auto flex flex-col w-[var(--sidebar-w)] h-full">
       
       <div className="sidebar-section mb-5">
         <NavGroup items={mainNav} />

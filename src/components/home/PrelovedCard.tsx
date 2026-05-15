@@ -2,6 +2,7 @@ import React from "react";
 import { CardImageCarousel } from "./CardImageCarousel";
 import { ListingImage } from "@/types/api";
 import { Check, RotateCcw, Trash2, ArrowRight } from "lucide-react";
+import { ListingPlaceholder } from "../ui/ListingPlaceholder";
 
 interface PrelovedCardProps {
   user: {
@@ -26,12 +27,14 @@ interface PrelovedCardProps {
   onWhatsApp?: (wa: string) => void;
   // CRUD props for Mine pages
   onStatusChange?: (newStatus: string) => void;
+  onEdit?: () => void;
   onDelete?: () => void;
   isOwner?: boolean;
+  hideImage?: boolean;
 }
 
 export function PrelovedCard({ 
-  user, timeAgo, status, title, price, maxPrice, condition, category, imageUrl, images, description, actionText, featured, onClick, onWhatsApp, onStatusChange, onDelete, isOwner
+  user, timeAgo, status, title, price, maxPrice, condition, category, imageUrl, images, description, actionText, featured, onClick, onWhatsApp, onStatusChange, onEdit, onDelete, isOwner, hideImage
 }: PrelovedCardProps) {
   
   const isAvailable = status === "AVAILABLE" || status === "OPEN";
@@ -73,20 +76,24 @@ export function PrelovedCard({
       className={`pcard bg-elevated rounded-xl shadow-sm border border-subtle overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-[3px] flex flex-col h-full ${featured ? 'lg:col-span-3 col-span-full' : 'lg:col-span-2 col-span-1'}`}
     >
       {/* Image area */}
-      {imageUrls.length > 0 && (
-        <div className={`w-full relative bg-cream-dark ${featured ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}>
-          <CardImageCarousel 
-            images={imageUrls} 
-            alt={title} 
-            featured={featured}
-          />
+      {!hideImage && (
+        <div className={`w-full relative bg-cream-dark shrink-0 overflow-hidden ${featured ? 'h-48' : 'h-40'}`}>
+          {imageUrls.length > 0 ? (
+            <CardImageCarousel 
+              images={imageUrls} 
+              alt={title} 
+              featured={featured}
+            />
+          ) : (
+            <ListingPlaceholder />
+          )}
           {/* Status badge on image */}
           <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
             <div className={`status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm ${isAvailable ? 'bg-sage text-white' : status === 'SOLD' ? 'bg-charcoal text-white' : 'bg-gold text-white'}`}>
               {status === 'AVAILABLE' ? 'Tersedia' : status === 'SOLD' ? 'Terjual' : status === 'RESERVED' ? 'Dipesan' : status}
             </div>
             {isOwner && (
-              <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-sm">
+               <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-sm">
                 Milik Saya
               </span>
             )}
@@ -141,6 +148,15 @@ export function PrelovedCard({
                 ) : (
                   <span className="flex items-center justify-center gap-1.5"><RotateCcw size={14} /> Buka Lagi</span>
                 )}
+              </button>
+            )}
+            {onEdit && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="py-2 px-3 rounded-full text-[11px] font-semibold bg-cream-dark text-charcoal hover:bg-charcoal-10 transition-colors"
+                title="Edit"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
               </button>
             )}
             {onDelete && (

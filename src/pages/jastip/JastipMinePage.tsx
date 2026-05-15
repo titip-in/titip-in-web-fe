@@ -15,6 +15,55 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useJastipListingDetail, useJastipRequestDetail } from "@/hooks/useJastip";
+import { useCategories } from "@/hooks/useCategory";
+
+function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
+  // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
+  const { data: listingDetail } = useJastipListingDetail(activeTab === 'listings' ? item.id : "");
+  const { data: requestDetail } = useJastipRequestDetail(activeTab === 'requests' ? item.id : "");
+  const { data: categories } = useCategories();
+
+  const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
+
+  const getCategoryTag = () => {
+    if (fullData.category) {
+      return `${fullData.category.icon || ''} ${fullData.category.name}`.trim();
+    }
+    if (fullData.category_id && categories) {
+      const cat = categories.find(c => c.id === fullData.category_id);
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
+    }
+    return "Umum";
+  };
+
+  return (
+    <JastipCard 
+      user={{ 
+        name: fullData.user?.name || "Kamu", 
+        avatarClass: activeTab === 'listings' ? "bg-gradient-to-br from-sage to-sage-dark" : "bg-gradient-to-br from-gold to-gold-dark", 
+        avatarInitial: (fullData.user?.name || "K").charAt(0).toUpperCase(),
+        wa_number: fullData.user?.wa_number 
+      }}
+      timeAgo={new Date(fullData.created_at || '').toLocaleDateString('id-ID')}
+      status={fullData.status}
+      route={{ from: fullData.from_loc, to: fullData.to_loc }}
+      tags={[getCategoryTag()]}
+      deadline={fullData.deadline ? new Date(fullData.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
+      notes={fullData.notes}
+      imageUrl={fullData.primary_image_url}
+      images={fullData.images}
+      actionText="Lihat Detail"
+      isOwner={true}
+      onStatusChange={activeTab === 'listings' ? (newStatus) => onStatusChange(fullData.id, newStatus) : undefined}
+      onEdit={onEdit}
+      onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
+      onClick={onClick}
+      hideImage={activeTab === 'requests'}
+      onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+    />
+  );
+}
 
 export default function JastipMinePage() {
   const [activeTab, setActiveTab] = useState<"listings" | "requests">("listings");
@@ -132,28 +181,15 @@ export default function JastipMinePage() {
           </div>
         ) : currentData && currentData.length > 0 ? (
           currentData.map((item: any) => (
-            <JastipCard 
+            <JastipMineCardWrapper 
               key={item.id}
-              user={{ 
-                name: item.user?.name || "Kamu", 
-                avatarClass: activeTab === 'listings' ? "bg-gradient-to-br from-sage to-sage-dark" : "bg-gradient-to-br from-gold to-gold-dark", 
-                avatarInitial: (item.user?.name || "K").charAt(0).toUpperCase(),
-                wa_number: item.user?.wa_number 
-              }}
-              timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
-              status={item.status}
-              route={{ from: item.from_loc, to: item.to_loc }}
-              tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
-              deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
-              notes={item.notes}
-              imageUrl={item.primary_image_url}
-              images={item.images}
-              actionText="Lihat Detail"
-              isOwner={true}
-              onStatusChange={activeTab === 'listings' ? (newStatus) => handleStatusChange(item.id, newStatus) : undefined}
-              onDelete={() => activeTab === 'listings' ? handleDeleteListing(item.id) : handleDeleteRequest(item.id)}
+              item={item}
+              activeTab={activeTab}
+              onStatusChange={handleStatusChange}
+              onDeleteListing={handleDeleteListing}
+              onDeleteRequest={handleDeleteRequest}
               onClick={() => navigate(`/jastip/${activeTab === 'listings' ? 'listings' : 'requests'}/${item.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onEdit={() => navigate(`/jastip/${activeTab === 'listings' ? 'listings' : 'requests'}/edit/${item.id}`)}
             />
           ))
         ) : (

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useCreateJastipRequest } from "@/hooks/useJastip";
+import { useCreateJastipRequest, useJastipRequestDetail, useUpdateJastipRequest } from "@/hooks/useJastip";
 import { useCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
 
 export default function JastipRequestCreatePage() {
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+
   const [fromLoc, setFromLoc] = useState("");
   const [toLoc, setToLoc] = useState("");
   const [notes, setNotes] = useState("");
@@ -15,29 +18,56 @@ export default function JastipRequestCreatePage() {
   
   const navigate = useNavigate();
   const createMutation = useCreateJastipRequest();
+  const updateMutation = useUpdateJastipRequest(id || "");
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: requestDetail, isLoading: isLoadingDetail } = useJastipRequestDetail(id || "");
+
+  useEffect(() => {
+    if (isEdit && requestDetail) {
+      setFromLoc(requestDetail.from_loc);
+      setToLoc(requestDetail.to_loc);
+      setNotes(requestDetail.notes || "");
+      setCategoryId(requestDetail.category_id || null);
+    }
+  }, [isEdit, requestDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createMutation.mutateAsync({
+      const payload = {
         category_id: categoryId,
         from_loc: fromLoc,
         to_loc: toLoc,
         notes: notes,
-        status: "OPEN"
-      });
-      navigate('/jastip/requests');
+        status: isEdit && requestDetail ? requestDetail.status : "OPEN"
+      };
+
+      if (isEdit) {
+        await updateMutation.mutateAsync(payload);
+        toast.success("Request jastip berhasil diperbarui.");
+      } else {
+        await createMutation.mutateAsync(payload);
+        toast.success("Request jastip berhasil dibuat.");
+      }
+      navigate('/jastip/mine');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Gagal membuat request jastip.");
+      toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} request jastip.`);
     }
   };
+
+  if (isEdit && isLoadingDetail) {
+    return (
+      <div className="flex justify-center py-20 text-charcoal-60">
+        Memuat data request...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[600px] mx-auto py-8 animate-fade-in">
       <div className="mb-8">
-        <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">Buat Request Jastip</h1>
-        <p className="text-[15px] text-charcoal-60">Minta tolong teman lain untuk membawakan barang dari rute tertentu.</p>
+        <h1 className="font-display text-[32px] font-medium text-charcoal mb-2">{isEdit ? 'Edit Request Jastip' : 'Buat Request Jastip'}</h1>
+        <p className="text-[15px] text-charcoal-60">{isEdit ? 'Perbarui informasi permintaan jastip kamu.' : 'Minta tolong teman lain untuk membawakan barang dari rute tertentu.'}</p>
       </div>
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
@@ -74,7 +104,7 @@ export default function JastipRequestCreatePage() {
               value={fromLoc}
               onChange={(e) => setFromLoc(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Jakarta"
+              placeholder="Contoh: Sawojajar"
             />
           </div>
           <div>
@@ -85,7 +115,7 @@ export default function JastipRequestCreatePage() {
               value={toLoc}
               onChange={(e) => setToLoc(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Malang"
+              placeholder="Contoh: Dinoyo"
             />
           </div>
           <div>
@@ -112,9 +142,9 @@ export default function JastipRequestCreatePage() {
           <Button 
             type="submit" 
             className="rounded-full bg-charcoal hover:bg-charcoal-80 text-white"
-            disabled={createMutation.isPending}
+            disabled={createMutation.isPending || updateMutation.isPending}
           >
-            {createMutation.isPending ? "Mengirim..." : "Posting Request"}
+            {createMutation.isPending || updateMutation.isPending ? "Menyimpan..." : (isEdit ? "Simpan Perubahan" : "Posting Request")}
           </Button>
         </div>
       </form>

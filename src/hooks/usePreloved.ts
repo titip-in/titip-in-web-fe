@@ -143,6 +143,21 @@ export function useCreatePrelovedRequest() {
   });
 }
 
+export function useUpdatePrelovedRequest(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<CreatePrelovedRequestPayload>) => {
+      const { data } = await api.put<ApiResponse<PrelovedRequest>>(`/v1/preloved/requests/${id}`, payload);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: prelovedKeys.requests() });
+      queryClient.invalidateQueries({ queryKey: prelovedKeys.requestDetail(id) });
+      queryClient.invalidateQueries({ queryKey: prelovedKeys.myRequests() });
+    },
+  });
+}
+
 export function useDeletePrelovedRequest() {
   const queryClient = useQueryClient();
   return useMutation({

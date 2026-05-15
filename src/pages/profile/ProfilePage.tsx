@@ -7,14 +7,20 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Package, ShoppingBag } from "lucide-react";
+import { Package, ShoppingBag, LogOut } from "lucide-react";
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
   const updateMutation = useUpdateProfile();
   const setAuthUser = useAuthStore((state) => state.setAuth);
   const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   const [name, setName] = useState("");
   const [waNumber, setWaNumber] = useState("");
@@ -157,6 +163,17 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 border-t border-subtle pt-8 flex justify-center pb-8">
+        <Button 
+          variant="default"
+          onClick={handleLogout}
+          className="rounded-full bg-red text-white hover:opacity-90 hover:text-white transition-opacity w-full sm:w-auto px-8 flex items-center gap-2 font-medium"
+        >
+          <LogOut size={18} />
+          <span>Keluar dari Akun</span>
+        </Button>
       </div>
 
     </div>
