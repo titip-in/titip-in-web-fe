@@ -60,6 +60,16 @@ export interface Category {
   updated_at: string | null;
 }
 
+export interface ListingImage {
+  id: number;
+  imageable_type: string;
+  imageable_id: string;
+  image_url: string;
+  is_primary: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 // ── Jastip Listing ────────────────────────────────────────
 export interface JastipListing {
   id: string; // UUID string
@@ -69,7 +79,8 @@ export interface JastipListing {
   to_loc: string;
   deadline: string;
   status: 'ACTIVE' | 'CLOSED';
-  image_url: string | null;
+  primary_image_url: string | null;
+  images: ListingImage[];
   lat: string | null;
   lng: string | null;
   created_at: string | null;
@@ -86,7 +97,8 @@ export interface CreateJastipListingPayload {
   to_loc: string;
   deadline: string;
   status?: 'ACTIVE' | 'CLOSED';
-  image_url?: string | null;
+  primary_image_url?: string | null;
+  images: string[];
   lat?: number | null;
   lng?: number | null;
 }
@@ -124,7 +136,8 @@ export interface PrelovedListing {
   description: string | null;
   price: number;
   condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR';
-  image_url: string | null;
+  primary_image_url: string | null;
+  images: ListingImage[];
   status: 'AVAILABLE' | 'SOLD' | 'RESERVED';
   created_at: string | null;
   updated_at: string | null;
@@ -140,7 +153,8 @@ export interface CreatePrelovedListingPayload {
   description?: string | null;
   price: number;
   condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR';
-  image_url?: string | null;
+  primary_image_url?: string | null;
+  images: string[];
   status?: 'AVAILABLE' | 'SOLD' | 'RESERVED';
 }
 

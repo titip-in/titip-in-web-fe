@@ -3,15 +3,25 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useSearch } from "@/hooks/useSearch";
 import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { JastipCard } from "@/components/home/JastipCard";
+import { CategoryScroll } from "@/components/ui/CategoryScroll";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
   const q = searchParams.get('q') || '';
   const typeParam = searchParams.get('type') as 'jastip' | 'preloved' || 'jastip';
   const [activeType, setActiveType] = useState<'jastip' | 'preloved'>(typeParam);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
   const { data: results, isLoading, error } = useSearch(q, activeType);
+
+  const filteredResults = React.useMemo(() => {
+    if (!results) return [];
+    if (selectedCategoryId === null) return results;
+    return results.filter((item: any) => item.category_id === selectedCategoryId);
+  }, [results, selectedCategoryId]);
 
   useEffect(() => {
     setActiveType(typeParam);
@@ -19,6 +29,7 @@ export default function SearchPage() {
 
   const switchType = (t: 'jastip' | 'preloved') => {
     setActiveType(t);
+    setSelectedCategoryId(null); // Reset category when switching type
     navigate(`/search?q=${encodeURIComponent(q)}&type=${t}`, { replace: true });
   };
 
@@ -62,6 +73,14 @@ export default function SearchPage() {
         </button>
       </div>
 
+      {q && (
+        <CategoryScroll 
+          type={activeType} 
+          selectedId={selectedCategoryId} 
+          onSelect={setSelectedCategoryId} 
+        />
+      )}
+
       {/* Results Grid */}
       {!q ? (
         <div className="py-20 text-center">
@@ -83,9 +102,9 @@ export default function SearchPage() {
           <h3 className="text-lg font-medium text-charcoal mb-2">Pencarian Gagal</h3>
           <p className="text-charcoal-60">Coba lagi nanti atau gunakan kata kunci lain.</p>
         </div>
-      ) : results && results.length > 0 ? (
+      ) : filteredResults && filteredResults.length > 0 ? (
         <div className={`grid gap-6 ${activeType === 'preloved' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {results.map((item: any) => (
+          {filteredResults.map((item: any) => (
             activeType === 'preloved' ? (
               <PrelovedCard
                 key={item.id}
@@ -100,8 +119,11 @@ export default function SearchPage() {
                 title={item.title}
                 price={item.price}
                 condition={item.condition}
-                imageUrl={item.image_url}
-                actionText="Lihat"
+                category={item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : undefined}
+                imageUrl={item.primary_image_url}
+                images={item.images}
+                actionText="Cek Detail"
+                isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/preloved/listings/${item.id}`)}
                 onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
               />
@@ -117,10 +139,12 @@ export default function SearchPage() {
                 timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
                 status={item.status}
                 route={{ from: item.from_loc, to: item.to_loc }}
-                tags={[item.category?.name || "Umum"]}
+                tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
                 deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
-                imageUrl={item.image_url}
+                imageUrl={item.primary_image_url}
+                images={item.images}
                 actionText="Lihat Detail"
+                isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/jastip/listings/${item.id}`)}
                 onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
               />

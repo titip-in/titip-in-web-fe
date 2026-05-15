@@ -6,6 +6,8 @@ import { X, Plus, Image as ImageIcon, Loader2 } from "lucide-react";
 interface MultiImageUploadProps {
   value: string[]; // Array of image URLs
   onChange: (urls: string[]) => void;
+  primaryImage?: string | null;
+  onPrimaryImageChange?: (url: string | null) => void;
   maxImages?: number;
   className?: string;
 }
@@ -13,6 +15,8 @@ interface MultiImageUploadProps {
 export function MultiImageUpload({ 
   value = [], 
   onChange, 
+  primaryImage = null,
+  onPrimaryImageChange,
   maxImages = 5,
   className = "" 
 }: MultiImageUploadProps) {
@@ -36,7 +40,11 @@ export function MultiImageUpload({
 
       uploadImage(file, {
         onSuccess: (url) => {
-          onChange([...value, url]);
+          const newValues = [...value, url];
+          onChange(newValues);
+          if (newValues.length === 1 && onPrimaryImageChange) {
+            onPrimaryImageChange(url);
+          }
         },
         onError: (err: any) => {
           toast.error(err.response?.data?.message || `Gagal mengunggah ${file.name}`);
@@ -46,9 +54,17 @@ export function MultiImageUpload({
   };
 
   const removeImage = (index: number) => {
+    const urlToRemove = value[index];
     const newImages = [...value];
     newImages.splice(index, 1);
     onChange(newImages);
+    if (primaryImage === urlToRemove && onPrimaryImageChange) {
+      onPrimaryImageChange(newImages.length > 0 ? newImages[0] : null);
+    }
+  };
+
+  const setPrimary = (url: string) => {
+    if (onPrimaryImageChange) onPrimaryImageChange(url);
   };
 
   return (
@@ -58,16 +74,27 @@ export function MultiImageUpload({
         {value.map((url, index) => (
           <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-subtle bg-cream-dark animate-in fade-in zoom-in duration-300">
             <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <button 
                 type="button"
                 onClick={() => removeImage(index)}
                 className="w-10 h-10 bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-red-500/80 transition-colors"
+                title="Hapus Foto"
               >
                 <X size={20} />
               </button>
+              {onPrimaryImageChange && url !== primaryImage && (
+                 <button 
+                  type="button"
+                  onClick={() => setPrimary(url)}
+                  className="w-10 h-10 bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center hover:bg-sage transition-colors"
+                  title="Jadikan Utama"
+                 >
+                   <ImageIcon size={18} />
+                 </button>
+              )}
             </div>
-            {index === 0 && (
+            {((!primaryImage && index === 0) || (primaryImage === url)) && (
               <div className="absolute top-2 left-2 px-2 py-0.5 bg-sage text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
                 Utama
               </div>

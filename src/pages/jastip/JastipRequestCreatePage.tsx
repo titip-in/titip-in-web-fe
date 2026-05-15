@@ -4,20 +4,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useCreateJastipRequest } from "@/hooks/useJastip";
+import { useCategories } from "@/hooks/useCategory";
 import { toast } from "sonner";
 
 export default function JastipRequestCreatePage() {
   const [fromLoc, setFromLoc] = useState("");
   const [toLoc, setToLoc] = useState("");
   const [notes, setNotes] = useState("");
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   
   const navigate = useNavigate();
   const createMutation = useCreateJastipRequest();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createMutation.mutateAsync({
+        category_id: categoryId,
         from_loc: fromLoc,
         to_loc: toLoc,
         notes: notes,
@@ -38,6 +42,30 @@ export default function JastipRequestCreatePage() {
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium text-charcoal-60 mb-3 block">Kategori Request</Label>
+            {isLoadingCategories ? (
+              <div className="text-sm text-charcoal-40">Memuat kategori...</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories?.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                      categoryId === cat.id 
+                        ? 'bg-sage text-white border-sage' 
+                        : 'bg-white text-charcoal-60 border-subtle hover:border-sage/50 hover:bg-sage/5'
+                    }`}
+                  >
+                    {cat.icon && <span className="mr-2">{cat.icon}</span>}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div>
             <Label htmlFor="from_loc" className="text-sm font-medium text-charcoal-60">Barang dari Mana?</Label>
             <Input

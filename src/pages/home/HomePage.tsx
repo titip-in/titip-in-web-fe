@@ -4,7 +4,9 @@ import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useAuthStore } from "@/stores/authStore";
 import { useJastipListings, useJastipRequests } from "@/hooks/useJastip";
 import { usePrelovedListings } from "@/hooks/usePreloved";
+import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
@@ -14,14 +16,25 @@ export default function HomePage() {
   const { data: jastipRequests } = useJastipRequests();
   const { data: prelovedListings, isLoading: isLoadingPreloved } = usePrelovedListings();
 
-  const activeJastip = jastipListings?.filter(l => l.status === 'ACTIVE') || [];
-  const activePreloved = prelovedListings?.filter(l => l.status === 'AVAILABLE') || [];
+  const [selectedJastipCat, setSelectedJastipCat] = useState<number | null>(null);
+  const [selectedPrelovedCat, setSelectedPrelovedCat] = useState<number | null>(null);
+
+  const activeJastip = React.useMemo(() => 
+    (jastipListings?.filter(l => l.status === 'ACTIVE' && (selectedJastipCat === null || l.category_id === selectedJastipCat)) || []),
+    [jastipListings, selectedJastipCat]
+  );
+  
+  const activePreloved = React.useMemo(() => 
+    (prelovedListings?.filter(l => l.status === 'AVAILABLE' && (selectedPrelovedCat === null || l.category_id === selectedPrelovedCat)) || []),
+    [prelovedListings, selectedPrelovedCat]
+  );
+  
   const openRequests = jastipRequests?.filter(r => r.status === 'OPEN') || [];
 
   return (
-    <div className="content-max animate-fade-in">
+    <div className="w-full animate-fade-in space-y-8">
       {/* ── HERO ── */}
-      <section className="hero bg-charcoal rounded-2xl p-10 relative overflow-hidden mb-8 min-h-[220px] flex items-center">
+      <section className="hero w-full bg-charcoal rounded-2xl p-12 relative overflow-hidden min-h-[280px] flex items-center">
         <div className="hero-blob w-[200px] h-[200px] bg-sage opacity-10 absolute rounded-full -top-[60px] -right-[40px]"></div>
         <div className="hero-blob w-[120px] h-[120px] bg-terracotta opacity-[0.12] absolute rounded-full -bottom-[30px] right-[200px]"></div>
         <div className="hero-blob w-[80px] h-[80px] bg-gold opacity-[0.08] absolute rounded-full top-[20px] right-[160px]"></div>
@@ -67,7 +80,7 @@ export default function HomePage() {
       </section>
 
       {/* ── STATS ── */}
-      <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard icon="📦" iconBgClass="bg-sage-pale text-sage-dark" label="Jastip Aktif" value={activeJastip.length.toString()} delta={{ value: "Diperbarui hari ini", isUp: true }} />
         <StatCard icon="🛍️" iconBgClass="bg-terracotta-pale text-terracotta-dark" label="Preloved Dijual" value={activePreloved.length.toString()} delta={{ value: "Banyak pilihan", isUp: true }} />
         <StatCard icon="📍" iconBgClass="bg-gold-pale text-gold-dark" label="Request Terbuka" value={openRequests.length.toString()} delta={{ value: "Siap diambil", isUp: true }} />
@@ -75,7 +88,7 @@ export default function HomePage() {
       </div>
 
       {/* ── JASTIP + RIGHT PANEL ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8">
         {/* Jastip List */}
         <section>
           <div className="section-header flex justify-between items-center mb-5">
@@ -88,24 +101,32 @@ export default function HomePage() {
             </button>
           </div>
 
+          <CategoryScroll 
+            type="jastip" 
+            selectedId={selectedJastipCat} 
+            onSelect={setSelectedJastipCat} 
+          />
+
           <div className="jastip-grid flex flex-col gap-4">
             {isLoadingJastip ? (
               <div className="py-10 text-center text-charcoal-60 flex items-center justify-center gap-3">
                 <svg className="animate-spin h-5 w-5 text-sage" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 Memuat jastip...
               </div>
-            ) : jastipListings && jastipListings.length > 0 ? (
-              jastipListings.slice(0, 3).map((listing) => (
+            ) : activeJastip.length > 0 ? (
+              activeJastip.slice(0, 3).map((listing) => (
                 <JastipCard 
                   key={listing.id}
                   user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
                   timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                   status={listing.status}
                   route={{ from: listing.from_loc, to: listing.to_loc }}
-                  tags={[listing.category?.name || "Umum"]}
+                  tags={[listing.category ? `${listing.category.icon || ''} ${listing.category.name}`.trim() : "Umum"]}
                   deadline={new Date(listing.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
-                  imageUrl={listing.image_url}
-                  actionText="💬 WhatsApp"
+                  imageUrl={listing.primary_image_url}
+                  images={listing.images}
+                  actionText="Lihat Detail"
+                  isOwner={listing.user_id === user?.id}
                   onClick={() => navigate(`/jastip/listings/${listing.id}`)}
                   onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
                 />
@@ -164,7 +185,7 @@ export default function HomePage() {
       </div>
 
       {/* ── PRELOVED MARKETPLACE ── */}
-      <section className="mb-10">
+      <section className="w-full">
         <div className="section-header flex justify-between items-center mb-5">
           <div>
             <h2 className="section-title font-display text-[22px] font-medium text-charcoal">Preloved Marketplace</h2>
@@ -175,14 +196,20 @@ export default function HomePage() {
           </button>
         </div>
 
+        <CategoryScroll 
+          type="preloved" 
+          selectedId={selectedPrelovedCat} 
+          onSelect={setSelectedPrelovedCat} 
+        />
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {isLoadingPreloved ? (
             <div className="col-span-full py-10 text-center text-charcoal-60 flex items-center justify-center gap-3">
               <svg className="animate-spin h-5 w-5 text-terracotta" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               Memuat preloved...
             </div>
-          ) : prelovedListings && prelovedListings.length > 0 ? (
-            prelovedListings.slice(0, 5).map((listing, idx) => (
+          ) : activePreloved.length > 0 ? (
+            activePreloved.slice(0, 8).map((listing, idx) => (
               <PrelovedCard 
                 key={listing.id}
                 featured={idx === 0}
@@ -192,8 +219,11 @@ export default function HomePage() {
                 title={listing.title}
                 price={listing.price}
                 condition={listing.condition}
-                imageUrl={listing.image_url}
-                actionText="Lihat"
+                category={listing.category ? `${listing.category.icon || ''} ${listing.category.name}`.trim() : undefined}
+                imageUrl={listing.primary_image_url}
+                images={listing.images}
+                actionText="Cek Detail"
+                isOwner={listing.user_id === user?.id}
                 onClick={() => navigate(`/preloved/listings/${listing.id}`)}
                 onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
               />

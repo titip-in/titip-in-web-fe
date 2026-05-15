@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useCreatePrelovedListing } from "@/hooks/usePreloved";
+import { useCategories } from "@/hooks/useCategory";
 import { MultiImageUpload } from "@/components/ui/MultiImageUpload";
 import { toast } from "sonner";
 
@@ -12,21 +13,26 @@ export default function PrelovedCreatePage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<"NEW" | "LIKE_NEW" | "GOOD" | "FAIR">("GOOD");
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [primaryImageUrl, setPrimaryImageUrl] = useState<string | null>(null);
   
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedListing();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await createMutation.mutateAsync({
+        category_id: categoryId,
         title,
         description,
         price: parseInt(price, 10),
         condition,
         status: "AVAILABLE",
-        image_url: imageUrls.length > 0 ? imageUrls.join(',') : null
+        primary_image_url: primaryImageUrl || (imageUrls.length > 0 ? imageUrls[0] : null),
+        images: imageUrls
       });
       navigate('/preloved/listings');
     } catch (error: any) {
@@ -41,6 +47,30 @@ export default function PrelovedCreatePage() {
 
       <form className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
+          <div>
+            <Label className="text-sm font-medium text-charcoal-60 mb-3 block">Kategori Barang</Label>
+            {isLoadingCategories ? (
+              <div className="text-sm text-charcoal-40">Memuat kategori...</div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {categories?.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+                      categoryId === cat.id 
+                        ? 'bg-sage text-white border-sage' 
+                        : 'bg-white text-charcoal-60 border-subtle hover:border-sage/50 hover:bg-sage/5'
+                    }`}
+                  >
+                    {cat.icon && <span className="mr-2">{cat.icon}</span>}
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <div>
             <Label htmlFor="title" className="text-sm font-medium text-charcoal-60">Nama Barang</Label>
             <Input
@@ -57,6 +87,8 @@ export default function PrelovedCreatePage() {
             <MultiImageUpload 
               value={imageUrls} 
               onChange={setImageUrls} 
+              primaryImage={primaryImageUrl}
+              onPrimaryImageChange={setPrimaryImageUrl}
               maxImages={5}
             />
           </div>
