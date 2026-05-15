@@ -10,7 +10,9 @@ export function Topbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=jastip`);
+      const isPrelovedContext = window.location.pathname.includes('/preloved');
+      const type = isPrelovedContext ? 'preloved' : 'jastip';
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=${type}`);
     }
   };
 

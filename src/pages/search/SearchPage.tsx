@@ -19,13 +19,22 @@ export default function SearchPage() {
 
   const filteredResults = React.useMemo(() => {
     if (!results) return [];
-    if (selectedCategoryId === null) return results;
-    return results.filter((item: any) => item.category_id === selectedCategoryId);
-  }, [results, selectedCategoryId]);
+    
+    // 1. Filter by requested type (just in case backend returns mixed)
+    const typeFiltered = results.filter((item: any) => {
+      const isPreloved = 'price' in item || 'condition' in item;
+      return activeType === 'preloved' ? isPreloved : !isPreloved;
+    });
+
+    // 2. Filter by selected category
+    if (selectedCategoryId === null) return typeFiltered;
+    return typeFiltered.filter((item: any) => item.category_id === selectedCategoryId);
+  }, [results, activeType, selectedCategoryId]);
 
   useEffect(() => {
     setActiveType(typeParam);
   }, [typeParam]);
+
 
   const switchType = (t: 'jastip' | 'preloved') => {
     setActiveType(t);
@@ -73,9 +82,8 @@ export default function SearchPage() {
         </button>
       </div>
 
-      {q && (
+      {q && !isLoading && (
         <CategoryScroll 
-          type={activeType} 
           selectedId={selectedCategoryId} 
           onSelect={setSelectedCategoryId} 
         />
@@ -120,8 +128,8 @@ export default function SearchPage() {
                 price={item.price}
                 condition={item.condition}
                 category={item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : undefined}
-                imageUrl={item.primary_image_url}
-                images={item.images}
+                imageUrl={item.primary_image_url || item.image_url || item.thumbnail_url || item.media_url}
+                images={item.images || []}
                 actionText="Cek Detail"
                 isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/preloved/listings/${item.id}`)}
@@ -141,8 +149,8 @@ export default function SearchPage() {
                 route={{ from: item.from_loc, to: item.to_loc }}
                 tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
                 deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
-                imageUrl={item.primary_image_url}
-                images={item.images}
+                imageUrl={item.primary_image_url || item.image_url || item.thumbnail_url || item.media_url}
+                images={item.images || []}
                 actionText="Lihat Detail"
                 isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/jastip/listings/${item.id}`)}

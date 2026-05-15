@@ -5,16 +5,26 @@ interface CategoryScrollProps {
   type?: 'jastip' | 'preloved';
   selectedId?: number | null;
   onSelect?: (id: number | null) => void;
+  availableIds?: number[];
 }
 
-export function CategoryScroll({ type, selectedId, onSelect }: CategoryScrollProps) {
+export function CategoryScroll({ type, selectedId, onSelect, availableIds }: CategoryScrollProps) {
   const { data: categories, isLoading } = useCategories();
 
-  if (isLoading || !categories || categories.length === 0) return null;
+  const filteredCategories = React.useMemo(() => {
+    if (!categories) return [];
+    
+    // Priority 1: Filter by availableIds (used in Search)
+    if (availableIds) {
+      return categories.filter(c => availableIds.includes(c.id));
+    }
+    
+    // Priority 2: Filter by type (if user wants to strictly separate, but currently unified by default)
+    // The user said categories should be the same, so we return all by default.
+    return categories;
+  }, [categories, availableIds]);
 
-  const filteredCategories = categories;
-
-  if (filteredCategories.length === 0) return null;
+  if (isLoading || !categories || categories.length === 0 || filteredCategories.length === 0) return null;
 
   return (
     <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-6">

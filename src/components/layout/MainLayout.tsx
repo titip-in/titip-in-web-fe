@@ -9,7 +9,7 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div
-      className="app-shell h-screen overflow-hidden"
+      className="app-shell fixed inset-0 overflow-hidden"
       style={{
         display: "grid",
         gridTemplateColumns: "var(--sidebar-w) 1fr",
