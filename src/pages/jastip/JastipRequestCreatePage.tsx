@@ -20,7 +20,7 @@ export default function JastipRequestCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateJastipRequest();
   const updateMutation = useUpdateJastipRequest(id || "");
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories('jastip');
   const { data: requestDetail, isLoading: isLoadingDetail } = useJastipRequestDetail(id || "");
 
   useEffect(() => {

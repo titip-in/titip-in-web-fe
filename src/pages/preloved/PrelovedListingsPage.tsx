@@ -75,7 +75,13 @@ export default function PrelovedListingsPage() {
             <PrelovedCard 
               key={listing.id}
               featured={idx < 2}
-              user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+              user={{ 
+                name: listing.user?.name || "User", 
+                avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", 
+                avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), 
+                avatar_url: listing.user?.avatar_url,
+                wa_number: listing.user?.wa_number 
+              }}
               timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
               status={listing.status}
               title={listing.title}

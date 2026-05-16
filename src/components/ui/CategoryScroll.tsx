@@ -9,18 +9,16 @@ interface CategoryScrollProps {
 }
 
 export function CategoryScroll({ type, selectedId, onSelect, availableIds }: CategoryScrollProps) {
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading } = useCategories(type);
 
   const filteredCategories = React.useMemo(() => {
     if (!categories) return [];
     
-    // Priority 1: Filter by availableIds (used in Search)
+    // If availableIds is provided (e.g. from search results), filter by those IDs
     if (availableIds) {
       return categories.filter(c => availableIds.includes(c.id));
     }
     
-    // Priority 2: Filter by type (if user wants to strictly separate, but currently unified by default)
-    // The user said categories should be the same, so we return all by default.
     return categories;
   }, [categories, availableIds]);
 

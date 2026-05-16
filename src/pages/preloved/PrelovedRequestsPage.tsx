@@ -46,7 +46,13 @@ export default function PrelovedRequestsPage() {
           requests.map((request) => (
             <PrelovedCard 
               key={request.id}
-              user={{ name: request.user?.name || "User", avatarClass: "bg-gradient-to-br from-gold to-gold-dark", avatarInitial: (request.user?.name || "U").charAt(0).toUpperCase(), wa_number: request.user?.wa_number }}
+              user={{ 
+                name: request.user?.name || "User", 
+                avatarClass: "bg-gradient-to-br from-gold to-gold-dark", 
+                avatarInitial: (request.user?.name || "U").charAt(0).toUpperCase(), 
+                avatar_url: request.user?.avatar_url,
+                wa_number: request.user?.wa_number 
+              }}
               timeAgo={new Date(request.created_at || '').toLocaleDateString('id-ID')}
               status={request.status}
               title={request.title}

@@ -107,8 +107,9 @@ export default function PrelovedRequestDetailPage() {
           <div className="bg-elevated border border-subtle rounded-2xl p-8 lg:p-12 shadow-sm">
             <div className="flex justify-between items-start mb-8">
               <div className="flex-grow">
-                <div className="status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase bg-terracotta-pale text-terracotta-dark mb-4">
-                  {item.status === 'OPEN' ? 'Terbuka' : item.status === 'FOUND' ? 'Sudah Ditemukan' : 'Ditutup'}
+                <div className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[12px] font-bold tracking-wide uppercase ${item.status === 'OPEN' ? 'bg-sage text-white' : item.status === 'FOUND' ? 'bg-gold text-white' : 'bg-charcoal-20 text-charcoal-60'} mb-4`}>
+                  <div className="w-[6px] h-[6px] rounded-full bg-current"></div>
+                  {item.status === 'OPEN' ? 'Terbuka' : item.status === 'FOUND' ? 'Ditemukan' : 'Ditutup'}
                 </div>
                 <h1 className="text-[32px] font-display font-medium text-charcoal leading-tight mb-4">
                   Mencari: {item.title}
@@ -192,12 +193,18 @@ export default function PrelovedRequestDetailPage() {
           {/* User Info Panel */}
           <div className="bg-elevated border border-subtle rounded-2xl p-8 shadow-sm">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-xl font-bold text-white shadow-sm">
-                {(item.user?.name || "U").charAt(0).toUpperCase()}
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-xl font-bold text-white shadow-sm border border-subtle">
+                {item.user?.avatar_url ? (
+                  <img src={item.user.avatar_url} alt={item.user.name} className="w-full h-full object-cover" />
+                ) : (
+                  (item.user?.name || "U").charAt(0).toUpperCase()
+                )}
               </div>
               <div>
                 <div className="text-base font-bold text-charcoal">{item.user?.name || "User"}</div>
-                <div className="text-xs text-charcoal-40">{item.user?.status || "User belum mengisi status"}</div>
+                <div className="text-[12px] text-charcoal-60 font-medium px-2 py-0.5 bg-charcoal-10 rounded-md inline-block mt-1">
+                  {item.user?.status || "Member Titip.in"}
+                </div>
               </div>
             </div>
 

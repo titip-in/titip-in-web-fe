@@ -19,7 +19,7 @@ export default function PrelovedRequestCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedRequest();
   const updateMutation = useUpdatePrelovedRequest(id || "");
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories('preloved');
   const { data: requestDetail, isLoading: isLoadingDetail } = usePrelovedRequestDetail(id || "");
 
   useEffect(() => {

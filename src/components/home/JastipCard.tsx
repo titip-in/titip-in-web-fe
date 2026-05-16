@@ -9,6 +9,7 @@ interface JastipCardProps {
     name: string;
     avatarClass: string;
     avatarInitial: string;
+    avatar_url?: string;
     wa_number?: string;
   };
   timeAgo: string;
@@ -73,8 +74,12 @@ export function JastipCard({
       <div className="p-5 flex flex-col flex-grow">
         <div className="jcard-top flex justify-between items-start mb-3">
           <div className="jcard-user flex items-center gap-3">
-            <div className={`jcard-avatar w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold text-white shrink-0 ${user.avatarClass}`}>
-              {user.avatarInitial}
+            <div className={`jcard-avatar w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-[14px] font-bold text-white shrink-0 ${user.avatarClass} border border-subtle`}>
+              {user.avatar_url ? (
+                <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                user.avatarInitial
+              )}
             </div>
             <div>
               <div className="jcard-name text-[14px] font-semibold text-charcoal">{user.name}</div>
@@ -82,9 +87,9 @@ export function JastipCard({
             </div>
           </div>
           <div className="flex flex-col items-end gap-2 shrink-0">
-            <div className={`status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase ${isAvailable ? 'bg-sage-pale text-sage-dark' : 'bg-gold-pale text-gold-dark'}`}>
+            <div className={`status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase ${isAvailable ? 'bg-sage-pale text-sage-dark' : status === 'TAKEN' ? 'bg-gold-pale text-gold-dark' : 'bg-charcoal-10 text-charcoal-60'}`}>
               <div className="w-[5px] h-[5px] rounded-full bg-current"></div>
-              {status === 'ACTIVE' ? 'Aktif' : status === 'OPEN' ? 'Terbuka' : status === 'CLOSED' ? 'Ditutup' : status === 'TAKEN' ? 'Diambil' : status}
+              {status === 'ACTIVE' || status === 'Aktif' ? 'Aktif' : status === 'OPEN' ? 'Terbuka' : status === 'CLOSED' ? 'Ditutup' : status === 'TAKEN' ? 'Diambil' : status}
             </div>
             {isOwner && (
               <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">

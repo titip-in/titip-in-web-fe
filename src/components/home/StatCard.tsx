@@ -9,11 +9,15 @@ interface StatCardProps {
     value: string;
     isUp: boolean;
   };
+  onClick?: () => void;
 }
 
-export function StatCard({ icon, iconBgClass, label, value, delta }: StatCardProps) {
+export function StatCard({ icon, iconBgClass, label, value, delta, onClick }: StatCardProps) {
   return (
-    <div className="stat-card bg-elevated rounded-xl shadow-sm border border-subtle p-5 flex flex-col gap-3 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <div 
+      onClick={onClick}
+      className={`stat-card bg-elevated rounded-xl shadow-sm border border-subtle p-5 flex flex-col gap-3 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`}
+    >
       <div className={`stat-icon w-10 h-10 rounded-md flex items-center justify-center text-[19px] ${iconBgClass}`}>
         {icon}
       </div>

@@ -54,7 +54,7 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="sidebar bg-charcoal p-5 border-r border-white/5 overflow-y-auto flex flex-col w-[var(--sidebar-w)] h-full">
+    <aside className="sidebar bg-charcoal p-5 border-r border-white/5 overflow-y-auto overflow-x-hidden flex flex-col w-[var(--sidebar-w)] h-full">
       
       <div className="sidebar-section mb-5">
         <NavGroup items={mainNav} />
@@ -75,25 +75,27 @@ export function Sidebar() {
         <NavGroup items={profileNav} />
       </div>
 
-      <div className="sidebar-footer mt-auto pt-4 border-t border-white/5 flex items-center gap-3">
-        {user?.avatar_url ? (
-          <img src={user.avatar_url} alt={user.name} className="sidebar-footer-avatar w-9 h-9 rounded-full object-cover flex-shrink-0 border border-white/10" />
-        ) : (
-          <div className="sidebar-footer-avatar w-9 h-9 rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[14px] font-bold text-white flex-shrink-0">
-            {user?.name?.charAt(0).toUpperCase() || "U"}
+      <div className="flex items-center gap-2 mt-auto pt-4 border-t border-white/5 overflow-hidden">
+        <Link to="/profile" className="flex-1 min-w-0 flex items-center gap-3 no-underline group hover:opacity-90 transition-opacity">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={user.name} className="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-white/10 group-hover:border-cream/30 transition-colors" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-sage to-terracotta flex items-center justify-center text-[14px] font-bold text-white flex-shrink-0">
+              {user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="text-[13px] font-semibold text-cream truncate">
+              {user?.name || "User"}
+            </div>
+            <div className="text-[10px] text-cream/30 capitalize truncate">
+              {user?.email || "Member"}
+            </div>
           </div>
-        )}
-        <div className="sidebar-footer-info flex-1 min-w-0">
-          <div className="sidebar-footer-name text-[13px] font-semibold text-cream whitespace-nowrap overflow-hidden text-ellipsis">
-            {user?.name || "User"}
-          </div>
-          <div className="sidebar-footer-role text-[10px] text-cream/30 capitalize">
-            {user?.email || "Member"}
-          </div>
-        </div>
+        </Link>
         <button 
           onClick={() => logout()}
-          className="sidebar-footer-btn w-7 h-7 rounded-sm bg-white/5 border-none flex items-center justify-center text-[12px] cursor-pointer text-cream/35 transition-colors hover:bg-white/10"
+          className="w-7 h-7 rounded-sm bg-white/5 border-none flex items-center justify-center text-[12px] cursor-pointer text-cream/35 transition-colors hover:bg-white/10"
           title="Logout"
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

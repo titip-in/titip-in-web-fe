@@ -1,7 +1,7 @@
 import "./about.css";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { Mail, ArrowLeft, Users, Shield, Zap } from "lucide-react";
+import { Mail, ArrowLeft, Users, Shield, Zap, Instagram } from "lucide-react";
 
 /* ─────────────────────────────────────────────
    Fade-in on scroll hook
@@ -283,6 +283,31 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* ── INSTAGRAM SECTION ── */}
+      <section className="about-instagram">
+        <div className="about-section">
+          <FadeSection>
+            <div className="about-instagram-card">
+              <div className="about-instagram-icon">
+                <Instagram size={40} />
+              </div>
+              <h2 className="about-instagram-title">Ikuti Perjalanan Kami</h2>
+              <p className="about-instagram-body">
+                Dapatkan update terbaru, tips jastip, dan penawaran preloved terbaik langsung di feed kamu.
+              </p>
+              <a 
+                href="https://instagram.com/titipin.me" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="about-instagram-link"
+              >
+                @titipin.me
+              </a>
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
       {/* ── CTA ── */}
       <section className="about-cta">
         <div className="about-cta-blob-1" />
@@ -325,6 +350,13 @@ export default function AboutPage() {
                 <div className="about-footer-col-title">Perusahaan</div>
                 <Link to="/about">Tentang Kami</Link>
                 <a href="mailto:support@titipin.me">Hubungi Kami</a>
+              </div>
+              <div className="about-footer-col">
+                <div className="about-footer-col-title">Sosial Media</div>
+                <a href="https://instagram.com/titipin.me" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                  <Instagram size={14} />
+                  Instagram
+                </a>
               </div>
               <div className="about-footer-col">
                 <div className="about-footer-col-title">Tim</div>

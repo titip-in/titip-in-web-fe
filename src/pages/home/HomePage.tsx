@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { formatTimeAgoShort } from "@/lib/dateUtils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,7 @@ import {
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-  
+
   const { data: jastipListings, isLoading: isLoadingJastip } = useJastipListings();
   const { data: jastipRequests } = useJastipRequests();
   const { data: prelovedListings, isLoading: isLoadingPreloved } = usePrelovedListings();
@@ -31,14 +32,14 @@ export default function HomePage() {
   const [selectedJastipCat, setSelectedJastipCat] = useState<number | null>(null);
   const [selectedPrelovedCat, setSelectedPrelovedCat] = useState<number | null>(null);
 
-  const { 
-    isJastipListingLimitReached, 
-    isJastipRequestLimitReached, 
+  const {
+    isJastipListingLimitReached,
+    isJastipRequestLimitReached,
     isPrelovedListingLimitReached,
     jastipListingActiveCount,
     jastipRequestActiveCount,
     prelovedListingActiveCount,
-    ACTIVE_LIMIT 
+    ACTIVE_LIMIT
   } = useActiveItemCount();
 
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
@@ -49,7 +50,7 @@ export default function HomePage() {
     let count = 0;
     let typeLabel = "";
 
-    switch(type) {
+    switch (type) {
       case "jastip-listing":
         isLimited = isJastipListingLimitReached;
         count = jastipListingActiveCount;
@@ -86,16 +87,16 @@ export default function HomePage() {
     return "Umum";
   };
 
-  const activeJastip = React.useMemo(() => 
+  const activeJastip = React.useMemo(() =>
     (jastipListings?.filter(l => l.status === 'ACTIVE' && (selectedJastipCat === null || l.category_id === selectedJastipCat)) || []),
     [jastipListings, selectedJastipCat]
   );
-  
-  const activePreloved = React.useMemo(() => 
+
+  const activePreloved = React.useMemo(() =>
     (prelovedListings?.filter(l => l.status === 'AVAILABLE' && (selectedPrelovedCat === null || l.category_id === selectedPrelovedCat)) || []),
     [prelovedListings, selectedPrelovedCat]
   );
-  
+
   const openRequests = jastipRequests?.filter(r => r.status === 'OPEN') || [];
 
   return (
@@ -105,23 +106,23 @@ export default function HomePage() {
         <div className="hero-blob w-[200px] h-[200px] bg-sage opacity-10 absolute rounded-full -top-[60px] -right-[40px]"></div>
         <div className="hero-blob w-[120px] h-[120px] bg-terracotta opacity-[0.12] absolute rounded-full -bottom-[30px] right-[200px]"></div>
         <div className="hero-blob w-[80px] h-[80px] bg-gold opacity-[0.08] absolute rounded-full top-[20px] right-[160px]"></div>
-        
+
         <div className="hero-content relative z-[1] max-w-[560px]">
           <div className="hero-tag text-[11px] font-semibold tracking-[2px] text-sage uppercase mb-3">● Tersedia Sekarang</div>
           <h1 className="hero-title font-display text-[28px] sm:text-[34px] lg:text-[42px] font-light italic text-cream leading-[1.1] mb-3">
-            Jastip & Preloved<br/>di Malang
+            Jastip & Preloved<br />di Malang
           </h1>
           <p className="hero-desc text-[13px] sm:text-[14px] lg:text-[15px] text-cream/45 leading-[1.6] mb-4 sm:mb-6 max-w-[440px]">
             Platform hyperlocal untuk mahasiswa Malang. Temukan jastip terdekat dan barang preloved dengan mudah — langsung hubungi via WhatsApp.
           </p>
           <div className="hero-actions flex flex-wrap gap-2 sm:gap-3">
-            <button 
+            <button
               onClick={() => handleCreateClick('jastip-listing', '/jastip/listings/create')}
               className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md active:scale-[0.97] flex items-center gap-2"
             >
               📦 Buka Jastip
             </button>
-            <button 
+            <button
               onClick={() => handleCreateClick('preloved-listing', '/preloved/listings/create')}
               className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/12 rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out active:scale-[0.97] flex items-center gap-2"
             >
@@ -148,10 +149,22 @@ export default function HomePage() {
 
       {/* ── STATS ── */}
       <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-        <StatCard icon="📦" iconBgClass="bg-sage-pale text-sage-dark" label="Jastip Aktif" value={activeJastip.length.toString()} delta={{ value: "Diperbarui hari ini", isUp: true }} />
-        <StatCard icon="🛍️" iconBgClass="bg-terracotta-pale text-terracotta-dark" label="Preloved Dijual" value={activePreloved.length.toString()} delta={{ value: "Banyak pilihan", isUp: true }} />
-        <StatCard icon="📍" iconBgClass="bg-gold-pale text-gold-dark" label="Request Terbuka" value={openRequests.length.toString()} delta={{ value: "Siap diambil", isUp: true }} />
-        <StatCard icon="👥" iconBgClass="bg-cream-dark text-charcoal-60" label="Total Listing" value={(jastipListings?.length || 0).toString()} delta={{ value: "Semua jastip", isUp: true }} />
+        <StatCard 
+          onClick={() => navigate('/jastip/listings')}
+          icon="📦" iconBgClass="bg-sage-pale text-sage-dark" label="Jastip Aktif" value={activeJastip.length.toString()} delta={{ value: "Diperbarui hari ini", isUp: true }} 
+        />
+        <StatCard 
+          onClick={() => navigate('/preloved/listings')}
+          icon="🛍️" iconBgClass="bg-terracotta-pale text-terracotta-dark" label="Preloved Dijual" value={activePreloved.length.toString()} delta={{ value: "Banyak pilihan", isUp: true }} 
+        />
+        <StatCard 
+          onClick={() => navigate('/jastip/requests')}
+          icon="📍" iconBgClass="bg-gold-pale text-gold-dark" label="Request Terbuka" value={openRequests.length.toString()} delta={{ value: "Siap diambil", isUp: true }} 
+        />
+        <StatCard 
+          onClick={() => navigate('/jastip/mine')}
+          icon="👥" iconBgClass="bg-cream-dark text-charcoal-60" label="Total Listing" value={(jastipListings?.length || 0).toString()} delta={{ value: "Semua jastip", isUp: true }} 
+        />
       </div>
 
       {/* ── JASTIP + RIGHT PANEL ── */}
@@ -168,10 +181,10 @@ export default function HomePage() {
             </button>
           </div>
 
-          <CategoryScroll 
-            type="jastip" 
-            selectedId={selectedJastipCat} 
-            onSelect={setSelectedJastipCat} 
+          <CategoryScroll
+            type="jastip"
+            selectedId={selectedJastipCat}
+            onSelect={setSelectedJastipCat}
           />
 
           <div className="jastip-grid flex flex-col gap-4">
@@ -182,9 +195,15 @@ export default function HomePage() {
               </div>
             ) : activeJastip.length > 0 ? (
               activeJastip.slice(0, 3).map((listing) => (
-                <JastipCard 
+                <JastipCard
                   key={listing.id}
-                  user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+                  user={{
+                    name: (listing.user_id === user?.id ? user?.name : listing.user?.name) || "User",
+                    avatarClass: "bg-gradient-to-br from-sage to-sage-dark",
+                    avatarInitial: ((listing.user_id === user?.id ? user?.name : listing.user?.name) || "U").charAt(0).toUpperCase(),
+                    avatar_url: listing.user_id === user?.id ? user?.avatar_url : listing.user?.avatar_url,
+                    wa_number: (listing.user_id === user?.id ? user?.wa_number : listing.user?.wa_number) || ""
+                  }}
                   timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                   status={listing.status}
                   title={listing.title}
@@ -217,9 +236,9 @@ export default function HomePage() {
                 { icon: "📍", label: "Request", desc: "Minta dititipin", bg: "bg-gold-pale", path: "/jastip/requests/create", type: "jastip-request" as const },
                 { icon: "🔍", label: "Cari", desc: "Cari barang", bg: "bg-cream-dark", path: "/preloved/listings", type: null },
               ].map((a) => (
-                <button 
-                  key={a.path} 
-                  onClick={() => a.type ? handleCreateClick(a.type, a.path) : navigate(a.path)} 
+                <button
+                  key={a.path}
+                  onClick={() => a.type ? handleCreateClick(a.type, a.path) : navigate(a.path)}
                   className={`${a.bg} rounded-lg p-4 text-left cursor-pointer transition-transform duration-100 hover:scale-[0.98] hover:shadow-sm flex flex-col gap-2`}
                 >
                   <span className="text-[22px]">{a.icon}</span>
@@ -242,15 +261,15 @@ export default function HomePage() {
                   <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${i % 3 === 0 ? 'bg-sage' : i % 3 === 1 ? 'bg-terracotta' : 'bg-gold'}`}></div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-medium text-charcoal leading-[1.3] truncate">Jastip {l.from_loc} → {l.to_loc}</div>
-                    <div className="text-[11px] text-charcoal-60 mt-[1px]">{l.user?.name || 'User'} · {l.status}</div>
+                    <div className="text-[11px] text-charcoal-60 mt-[1px] truncate">{l.user?.name || 'User'} · {l.status}</div>
                   </div>
                   <span className="text-[10px] text-charcoal-30 font-medium whitespace-nowrap mt-[2px]">
-                    {new Date(l.created_at || '').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                    {formatTimeAgoShort(l.created_at || '')}
                   </span>
                 </div>
               )) || (
-                <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
-              )}
+                  <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
+                )}
             </div>
           </div>
 
@@ -287,13 +306,13 @@ export default function HomePage() {
                 TIPS CUAN 💸
               </span>
               <h3 className="font-display text-[20px] font-medium leading-tight mb-2">
-                Barang nganggur<br/>di kos?
+                Barang nganggur<br />di kos?
               </h3>
               <p className="text-[13px] text-white/85 mb-5 leading-[1.5]">
                 Ubah jadi uang saku tambahan. Upload ke preloved marketplace, langsung dibeli teman kampus!
               </p>
-              <button 
-                onClick={() => handleCreateClick('preloved-listing', '/preloved/listings/create')} 
+              <button
+                onClick={() => handleCreateClick('preloved-listing', '/preloved/listings/create')}
                 className="w-full py-2.5 bg-white text-terracotta-dark text-[13px] font-bold rounded-full shadow-sm hover:bg-cream transition-transform duration-200 hover:-translate-y-0.5 active:scale-95 mt-auto"
               >
                 Mulai Jual Barang
@@ -315,10 +334,10 @@ export default function HomePage() {
           </button>
         </div>
 
-        <CategoryScroll 
-          type="preloved" 
-          selectedId={selectedPrelovedCat} 
-          onSelect={setSelectedPrelovedCat} 
+        <CategoryScroll
+          type="preloved"
+          selectedId={selectedPrelovedCat}
+          onSelect={setSelectedPrelovedCat}
         />
 
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
@@ -329,10 +348,16 @@ export default function HomePage() {
             </div>
           ) : activePreloved.length > 0 ? (
             activePreloved.slice(0, 8).map((listing, idx) => (
-              <PrelovedCard 
+              <PrelovedCard
                 key={listing.id}
                 featured={idx < 2}
-                user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+                user={{
+                  name: (listing.user_id === user?.id ? user?.name : listing.user?.name) || "User",
+                  avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark",
+                  avatarInitial: ((listing.user_id === user?.id ? user?.name : listing.user?.name) || "U").charAt(0).toUpperCase(),
+                  avatar_url: listing.user_id === user?.id ? user?.avatar_url : listing.user?.avatar_url,
+                  wa_number: (listing.user_id === user?.id ? user?.wa_number : listing.user?.wa_number) || ""
+                }}
                 timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                 status={listing.status}
                 title={listing.title}
@@ -360,7 +385,7 @@ export default function HomePage() {
             <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
               Kamu sudah memiliki <strong>{limitDialogData.count}/{ACTIVE_LIMIT}</strong> {limitDialogData.type} aktif.
-              <br/><br/>Tutup atau hapus salah satu item yang sudah tidak aktif sebelum membuat yang baru.
+              <br /><br />Tutup atau hapus salah satu item yang sudah tidak aktif sebelum membuat yang baru.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

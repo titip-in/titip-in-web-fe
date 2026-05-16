@@ -23,7 +23,7 @@ export default function PrelovedCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreatePrelovedListing();
   const updateMutation = useUpdatePrelovedListing(id || "");
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories('preloved');
   const { data: listingDetail, isLoading: isLoadingDetail } = usePrelovedListingDetail(id || "");
 
   useEffect(() => {

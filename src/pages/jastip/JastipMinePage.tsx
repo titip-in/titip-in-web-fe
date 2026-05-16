@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useMyJastipListings, useMyJastipRequests, useDeleteJastipListing, useDeleteJastipRequest } from "@/hooks/useJastip";
 import { JastipCard } from "@/components/home/JastipCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/authStore";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -27,6 +28,8 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
   const { data: requestDetail } = useJastipRequestDetail(activeTab === 'requests' ? item.id : "");
   const { data: categories } = useCategories();
 
+  const currentUser = useAuthStore((s) => s.user);
+
   const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
 
   const getCategoryTag = () => {
@@ -43,10 +46,11 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
   return (
     <JastipCard 
       user={{ 
-        name: fullData.user?.name || "Kamu", 
+        name: fullData.user?.name || currentUser?.name || "Kamu", 
         avatarClass: activeTab === 'listings' ? "bg-gradient-to-br from-sage to-sage-dark" : "bg-gradient-to-br from-gold to-gold-dark", 
-        avatarInitial: (fullData.user?.name || "K").charAt(0).toUpperCase(),
-        wa_number: fullData.user?.wa_number 
+        avatarInitial: (fullData.user?.name || currentUser?.name || "K").charAt(0).toUpperCase(),
+        avatar_url: fullData.user?.avatar_url || currentUser?.avatar_url,
+        wa_number: fullData.user?.wa_number || currentUser?.wa_number 
       }}
       timeAgo={new Date(fullData.created_at || '').toLocaleDateString('id-ID')}
       status={fullData.status}
@@ -59,7 +63,7 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
       images={fullData.images}
       actionText="Lihat Detail"
       isOwner={true}
-      onStatusChange={activeTab === 'listings' ? (newStatus) => onStatusChange(fullData.id, newStatus) : undefined}
+      onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
       onClick={onClick}
@@ -70,7 +74,21 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
 }
 
 export default function JastipMinePage() {
-  const [activeTab, setActiveTab] = useState<"listings" | "requests">("listings");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<"listings" | "requests">((searchParams.get("tab") as "listings" | "requests") || "listings");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "listings" || tab === "requests") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: "listings" | "requests") => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
   const { data: listings, isLoading: loadingListings } = useMyJastipListings();
   const { data: requests, isLoading: loadingRequests } = useMyJastipRequests();
   const navigate = useNavigate();
@@ -142,9 +160,15 @@ export default function JastipMinePage() {
       }
     }
 
+    const getLabel = (s: string) => {
+      if (s === 'CLOSED') return 'Ditutup';
+      if (s === 'TAKEN') return 'Diambil';
+      return 'Aktif';
+    };
+
     confirmAction(
       "Konfirmasi Ubah Status",
-      `Ubah status menjadi ${newStatus === 'CLOSED' ? 'Ditutup' : 'Aktif'}?`,
+      `Ubah status menjadi ${getLabel(newStatus)}?`,
       async () => {
         try {
           const endpoint = activeTab === 'listings' ? `/v1/jastip/listings/${id}` : `/v1/jastip/requests/${id}`;
@@ -226,7 +250,7 @@ export default function JastipMinePage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex gap-2">
           <button 
-            onClick={() => setActiveTab("listings")}
+            onClick={() => handleTabChange("listings")}
             className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
               activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
             }`}
@@ -235,7 +259,7 @@ export default function JastipMinePage() {
             {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
           </button>
           <button 
-            onClick={() => setActiveTab("requests")}
+            onClick={() => handleTabChange("requests")}
             className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
               activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
             }`}

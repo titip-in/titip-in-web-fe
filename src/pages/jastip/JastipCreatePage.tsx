@@ -24,7 +24,7 @@ export default function JastipCreatePage() {
   const navigate = useNavigate();
   const createMutation = useCreateJastipListing();
   const updateMutation = useUpdateJastipListing(id || "");
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: categories, isLoading: isLoadingCategories } = useCategories('jastip');
   const { data: listingDetail, isLoading: isLoadingDetail } = useJastipListingDetail(id || "");
 
   useEffect(() => {

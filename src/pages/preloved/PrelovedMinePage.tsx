@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useMyPrelovedListings, useMyPrelovedRequests, useDeletePrelovedListing, useDeletePrelovedRequest } from "@/hooks/usePreloved";
 import { PrelovedCard } from "@/components/home/PrelovedCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/authStore";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -26,6 +27,8 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
   const { data: requestDetail } = usePrelovedRequestDetail(activeTab === 'requests' ? item.id : "");
   const { data: categories } = useCategories();
 
+  const currentUser = useAuthStore((s) => s.user);
+
   const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
 
   const getCategoryName = () => {
@@ -43,10 +46,11 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
     <PrelovedCard 
       featured={idx < 2}
       user={{ 
-        name: fullData.user?.name || "Kamu", 
+        name: fullData.user?.name || currentUser?.name || "Kamu", 
         avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark", 
-        avatarInitial: (fullData.user?.name || "K").charAt(0).toUpperCase(),
-        wa_number: fullData.user?.wa_number 
+        avatarInitial: (fullData.user?.name || currentUser?.name || "K").charAt(0).toUpperCase(),
+        avatar_url: fullData.user?.avatar_url || currentUser?.avatar_url,
+        wa_number: fullData.user?.wa_number || currentUser?.wa_number 
       }}
       timeAgo={new Date(fullData.created_at || '').toLocaleDateString('id-ID')}
       status={fullData.status}
@@ -60,7 +64,7 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
       description={fullData.description}
       actionText="Lihat Detail"
       isOwner={true}
-      onStatusChange={activeTab === 'listings' ? (newStatus) => onStatusChange(fullData.id, newStatus) : undefined}
+      onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
       onClick={onClick}
@@ -71,7 +75,21 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
 }
 
 export default function PrelovedMinePage() {
-  const [activeTab, setActiveTab] = useState<"listings" | "requests">("listings");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<"listings" | "requests">((searchParams.get("tab") as "listings" | "requests") || "listings");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "listings" || tab === "requests") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: "listings" | "requests") => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
+
   const { data: listings, isLoading: loadingListings } = useMyPrelovedListings();
   const { data: requests, isLoading: loadingRequests } = useMyPrelovedRequests();
   const navigate = useNavigate();
@@ -120,9 +138,16 @@ export default function PrelovedMinePage() {
       }
     }
 
+    const getLabel = (s: string) => {
+      if (s === 'SOLD') return 'Terjual';
+      if (s === 'FOUND') return 'Ditemukan';
+      if (s === 'CLOSED') return 'Ditutup';
+      return 'Aktif';
+    };
+
     confirmAction(
       "Konfirmasi Ubah Status",
-      `Ubah status menjadi ${newStatus === 'SOLD' ? 'Terjual' : newStatus === 'CLOSED' ? 'Ditutup' : 'Aktif'}?`,
+      `Ubah status menjadi ${getLabel(newStatus)}?`,
       async () => {
         try {
           const endpoint = activeTab === 'listings' ? `/v1/preloved/listings/${id}` : `/v1/preloved/requests/${id}`;
@@ -185,7 +210,7 @@ export default function PrelovedMinePage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex gap-2">
           <button 
-            onClick={() => setActiveTab("listings")}
+            onClick={() => handleTabChange("listings")}
             className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
               activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
             }`}
@@ -194,7 +219,7 @@ export default function PrelovedMinePage() {
             {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
           </button>
           <button 
-            onClick={() => setActiveTab("requests")}
+            onClick={() => handleTabChange("requests")}
             className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
               activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
             }`}
