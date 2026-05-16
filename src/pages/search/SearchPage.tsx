@@ -84,6 +84,7 @@ export default function SearchPage() {
 
       {q && !isLoading && (
         <CategoryScroll 
+          type={activeType}
           selectedId={selectedCategoryId} 
           onSelect={setSelectedCategoryId} 
         />
@@ -117,10 +118,11 @@ export default function SearchPage() {
               <PrelovedCard
                 key={item.id}
                 user={{
-                  name: item.user?.name || "User",
+                  name: (item.user_id === user?.id ? user?.name : item.user?.name) || "User",
                   avatarClass: "bg-gradient-to-br from-terracotta to-terracotta-dark",
-                  avatarInitial: (item.user?.name || "U").charAt(0).toUpperCase(),
-                  wa_number: item.user?.wa_number,
+                  avatarInitial: ((item.user_id === user?.id ? user?.name : item.user?.name) || "U").charAt(0).toUpperCase(),
+                  avatar_url: item.user_id === user?.id ? user?.avatar_url : item.user?.avatar_url,
+                  wa_number: (item.user_id === user?.id ? user?.wa_number : item.user?.wa_number) || "",
                 }}
                 timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
                 status={item.status}
@@ -128,7 +130,7 @@ export default function SearchPage() {
                 price={item.price}
                 condition={item.condition}
                 category={item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : undefined}
-                imageUrl={item.primary_image_url || item.image_url || item.thumbnail_url || item.media_url}
+                imageUrl={item.primary_image_url || (item.images && item.images.length > 0 ? item.images[0].image_url : null)}
                 images={item.images || []}
                 actionText="Cek Detail"
                 isOwner={item.user_id === user?.id}
@@ -139,10 +141,11 @@ export default function SearchPage() {
               <JastipCard
                 key={item.id}
                 user={{
-                  name: item.user?.name || "User",
+                  name: (item.user_id === user?.id ? user?.name : item.user?.name) || "User",
                   avatarClass: "bg-gradient-to-br from-sage to-sage-dark",
-                  avatarInitial: (item.user?.name || "U").charAt(0).toUpperCase(),
-                  wa_number: item.user?.wa_number,
+                  avatarInitial: ((item.user_id === user?.id ? user?.name : item.user?.name) || "U").charAt(0).toUpperCase(),
+                  avatar_url: item.user_id === user?.id ? user?.avatar_url : item.user?.avatar_url,
+                  wa_number: (item.user_id === user?.id ? user?.wa_number : item.user?.wa_number) || "",
                 }}
                 timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
                 status={item.status}
@@ -150,7 +153,7 @@ export default function SearchPage() {
                 route={{ from: item.from_loc, to: item.to_loc }}
                 tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
                 deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}
-                imageUrl={item.primary_image_url || item.image_url || item.thumbnail_url || item.media_url}
+                imageUrl={item.primary_image_url || (item.images && item.images.length > 0 ? item.images[0].image_url : null)}
                 images={item.images || []}
                 actionText="Lihat Detail"
                 isOwner={item.user_id === user?.id}
