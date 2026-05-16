@@ -9,8 +9,8 @@ interface JastipCardProps {
     name: string;
     avatarClass: string;
     avatarInitial: string;
-    avatar_url?: string;
-    wa_number?: string;
+    avatar_url?: string | null;
+    wa_number?: string | null;
   };
   timeAgo: string;
   status: "ACTIVE" | "CLOSED" | "OPEN" | "TAKEN" | "Aktif" | "Pending";

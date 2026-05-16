@@ -147,7 +147,7 @@ export interface PrelovedListing {
   condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR';
   primary_image_url: string | null;
   images: ListingImage[];
-  status: 'AVAILABLE' | 'SOLD' | 'RESERVED';
+  status: 'AVAILABLE' | 'SOLD' | 'CLOSED';
   created_at: string | null;
   updated_at: string | null;
   embedding?: string | null;
@@ -164,7 +164,7 @@ export interface CreatePrelovedListingPayload {
   condition: 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR';
   primary_image_url?: string | null;
   images: string[];
-  status?: 'AVAILABLE' | 'SOLD' | 'RESERVED';
+  status?: 'AVAILABLE' | 'SOLD' | 'CLOSED';
 }
 
 // ── Preloved Request ──────────────────────────────────────

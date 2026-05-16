@@ -9,8 +9,8 @@ interface PrelovedCardProps {
     name: string;
     avatarClass: string;
     avatarInitial: string;
-    avatar_url?: string;
-    wa_number?: string;
+    avatar_url?: string | null;
+    wa_number?: string | null;
   };
   timeAgo: string;
   status: "AVAILABLE" | "SOLD" | "RESERVED" | "OPEN" | "FOUND" | "CLOSED";
