@@ -19,7 +19,7 @@ export function useProfile() {
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: { name?: string; wa_number?: string; avatar_url?: string | null }) => {
+    mutationFn: async (payload: { name?: string; wa_number?: string; avatar_url?: string | null; status?: string | null }) => {
       const { data } = await api.put<ApiResponse<User>>('/v1/me', payload);
       return data.data;
     },

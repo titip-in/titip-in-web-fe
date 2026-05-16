@@ -8,6 +8,16 @@ import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import { useCategories } from "@/hooks/useCategory";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
@@ -20,6 +30,50 @@ export default function HomePage() {
 
   const [selectedJastipCat, setSelectedJastipCat] = useState<number | null>(null);
   const [selectedPrelovedCat, setSelectedPrelovedCat] = useState<number | null>(null);
+
+  const { 
+    isJastipListingLimitReached, 
+    isJastipRequestLimitReached, 
+    isPrelovedListingLimitReached,
+    jastipListingActiveCount,
+    jastipRequestActiveCount,
+    prelovedListingActiveCount,
+    ACTIVE_LIMIT 
+  } = useActiveItemCount();
+
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [limitDialogData, setLimitDialogData] = useState({ count: 0, type: "" });
+
+  const handleCreateClick = (type: "jastip-listing" | "jastip-request" | "preloved-listing", path: string) => {
+    let isLimited = false;
+    let count = 0;
+    let typeLabel = "";
+
+    switch(type) {
+      case "jastip-listing":
+        isLimited = isJastipListingLimitReached;
+        count = jastipListingActiveCount;
+        typeLabel = "jastip listing";
+        break;
+      case "jastip-request":
+        isLimited = isJastipRequestLimitReached;
+        count = jastipRequestActiveCount;
+        typeLabel = "jastip request";
+        break;
+      case "preloved-listing":
+        isLimited = isPrelovedListingLimitReached;
+        count = prelovedListingActiveCount;
+        typeLabel = "preloved listing";
+        break;
+    }
+
+    if (isLimited) {
+      setLimitDialogData({ count, type: typeLabel });
+      setLimitDialogOpen(true);
+      return;
+    }
+    navigate(path);
+  };
 
   const getCategoryTag = (item: any) => {
     if (item.category) {
@@ -62,13 +116,13 @@ export default function HomePage() {
           </p>
           <div className="hero-actions flex flex-wrap gap-2 sm:gap-3">
             <button 
-              onClick={() => navigate('/jastip/listings/create')}
+              onClick={() => handleCreateClick('jastip-listing', '/jastip/listings/create')}
               className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-terracotta-dark shadow-sm transition-all duration-100 ease-out hover:shadow-md active:scale-[0.97] flex items-center gap-2"
             >
               📦 Buka Jastip
             </button>
             <button 
-              onClick={() => navigate('/preloved/listings/create')}
+              onClick={() => handleCreateClick('preloved-listing', '/preloved/listings/create')}
               className="btn btn-md btn-soft bg-cream/10 text-cream border border-cream/12 rounded-full font-body font-semibold px-4 sm:px-6 py-2.5 sm:py-3 text-[13px] sm:text-[14px] hover:bg-cream/15 transition-all duration-100 ease-out active:scale-[0.97] flex items-center gap-2"
             >
               🛍️ Jual Barang
@@ -158,12 +212,16 @@ export default function HomePage() {
             <h3 className="font-display text-[16px] font-medium text-charcoal mb-4">Aksi Cepat</h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: "📦", label: "Buka Jastip", desc: "Buat jastip baru", bg: "bg-sage-pale", path: "/jastip/listings/create" },
-                { icon: "🛍️", label: "Jual Barang", desc: "Post preloved", bg: "bg-terracotta-pale", path: "/preloved/listings/create" },
-                { icon: "📍", label: "Request", desc: "Minta dititipin", bg: "bg-gold-pale", path: "/jastip/requests/create" },
-                { icon: "🔍", label: "Cari", desc: "Cari barang", bg: "bg-cream-dark", path: "/preloved/listings" },
+                { icon: "📦", label: "Buka Jastip", desc: "Buat jastip baru", bg: "bg-sage-pale", path: "/jastip/listings/create", type: "jastip-listing" as const },
+                { icon: "🛍️", label: "Jual Barang", desc: "Post preloved", bg: "bg-terracotta-pale", path: "/preloved/listings/create", type: "preloved-listing" as const },
+                { icon: "📍", label: "Request", desc: "Minta dititipin", bg: "bg-gold-pale", path: "/jastip/requests/create", type: "jastip-request" as const },
+                { icon: "🔍", label: "Cari", desc: "Cari barang", bg: "bg-cream-dark", path: "/preloved/listings", type: null },
               ].map((a) => (
-                <button key={a.path} onClick={() => navigate(a.path)} className={`${a.bg} rounded-lg p-4 text-left cursor-pointer transition-transform duration-100 hover:scale-[0.98] hover:shadow-sm flex flex-col gap-2`}>
+                <button 
+                  key={a.path} 
+                  onClick={() => a.type ? handleCreateClick(a.type, a.path) : navigate(a.path)} 
+                  className={`${a.bg} rounded-lg p-4 text-left cursor-pointer transition-transform duration-100 hover:scale-[0.98] hover:shadow-sm flex flex-col gap-2`}
+                >
                   <span className="text-[22px]">{a.icon}</span>
                   <span className="text-[12px] font-semibold text-charcoal">{a.label}</span>
                   <span className="text-[10px] text-charcoal-60">{a.desc}</span>
@@ -207,6 +265,18 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Support Info */}
+          <div className="bg-gold-pale/60 border border-gold/20 rounded-xl p-4 flex items-start gap-3 mt-4">
+            <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center shrink-0 text-gold-dark">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            </div>
+            <div>
+              <h4 className="font-semibold text-[12px] text-gold-dark mb-0.5">Butuh Bantuan?</h4>
+              <p className="text-[11px] text-gold-dark/80 leading-[1.4] mb-1.5">Ada kendala atau pertanyaan seputar Titip.in?</p>
+              <a href="mailto:support@titipin.me" className="text-[11px] font-bold text-gold-dark hover:underline">Hubungi support@titipin.me</a>
+            </div>
+          </div>
+
           {/* CTA Promo Banner */}
           <div className="bg-gradient-to-br from-terracotta to-terracotta-dark rounded-xl shadow-sm overflow-hidden relative p-6 text-white flex-1 flex flex-col justify-center">
             {/* Decorative blobs */}
@@ -223,7 +293,7 @@ export default function HomePage() {
                 Ubah jadi uang saku tambahan. Upload ke preloved marketplace, langsung dibeli teman kampus!
               </p>
               <button 
-                onClick={() => navigate('/preloved/listings/create')} 
+                onClick={() => handleCreateClick('preloved-listing', '/preloved/listings/create')} 
                 className="w-full py-2.5 bg-white text-terracotta-dark text-[13px] font-bold rounded-full shadow-sm hover:bg-cream transition-transform duration-200 hover:-translate-y-0.5 active:scale-95 mt-auto"
               >
                 Mulai Jual Barang
@@ -282,6 +352,22 @@ export default function HomePage() {
           )}
         </div>
       </section>
+      {/* Limit reached dialog */}
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{limitDialogData.count}/{ACTIVE_LIMIT}</strong> {limitDialogData.type} aktif.
+              <br/><br/>Tutup atau hapus salah satu item yang sudah tidak aktif sebelum membuat yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

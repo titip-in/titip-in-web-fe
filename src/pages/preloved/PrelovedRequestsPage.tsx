@@ -1,13 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePrelovedRequests } from "@/hooks/usePreloved";
 import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function PrelovedRequestsPage() {
   const { data: requests, isLoading } = usePrelovedRequests();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const { isPrelovedRequestLimitReached, prelovedRequestActiveCount, ACTIVE_LIMIT } = useActiveItemCount();
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+
+  const handleCreateClick = () => {
+    if (isPrelovedRequestLimitReached) { setLimitDialogOpen(true); return; }
+    navigate('/preloved/requests/create');
+  };
 
   return (
     <div className="w-full animate-fade-in">
@@ -17,7 +29,7 @@ export default function PrelovedRequestsPage() {
           <p className="text-[14px] text-charcoal-60 mt-1">Butuh barang tapi belum ada yang jual? Buat request barang preloved</p>
         </div>
         <button 
-          onClick={() => navigate('/preloved/requests/create')}
+          onClick={handleCreateClick}
           className="btn btn-md btn-primary bg-charcoal text-cream rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-charcoal-80 shadow-sm transition-all active:scale-[0.97] flex items-center gap-2"
         >
           🔍 Buat Request
@@ -56,6 +68,22 @@ export default function PrelovedRequestsPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{prelovedRequestActiveCount}/{ACTIVE_LIMIT}</strong> preloved request aktif.<br/><br/>
+              Tutup atau hapus salah satu request sebelum membuat yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

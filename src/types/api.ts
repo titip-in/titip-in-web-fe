@@ -46,6 +46,7 @@ export interface User {
   email_verified_at: string | null;
   wa_number: string;
   avatar_url: string | null;
+  status: string | null;
   created_at: string | null;
   updated_at: string | null;
 }

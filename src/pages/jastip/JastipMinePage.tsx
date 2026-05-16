@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Plus } from "lucide-react";
 import { useMyJastipListings, useMyJastipRequests, useDeleteJastipListing, useDeleteJastipRequest } from "@/hooks/useJastip";
 import { JastipCard } from "@/components/home/JastipCard";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useJastipListingDetail, useJastipRequestDetail } from "@/hooks/useJastip";
 import { useCategories } from "@/hooks/useCategory";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { Input } from "@/components/ui/input";
 
 function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
   // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
@@ -72,6 +75,7 @@ export default function JastipMinePage() {
   const { data: requests, isLoading: loadingRequests } = useMyJastipRequests();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isJastipListingLimitReached, isJastipRequestLimitReached, ACTIVE_LIMIT, jastipListingActiveCount, jastipRequestActiveCount } = useActiveItemCount();
 
   const deleteListing = useDeleteJastipListing();
   const deleteRequest = useDeleteJastipRequest();
@@ -86,18 +90,65 @@ export default function JastipMinePage() {
     action: () => {}
   });
 
+  // Limit reached dialog
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [limitDialogType, setLimitDialogType] = useState<"listings" | "requests">("listings");
+
+  // Reopen listing dialog (requires new deadline)
+  const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
+  const [reopenListingId, setReopenListingId] = useState<string | null>(null);
+  const [reopenDeadline, setReopenDeadline] = useState("");
+
+  const handleCreateClick = (type: "listings" | "requests") => {
+    const isLimited = type === "listings" ? isJastipListingLimitReached : isJastipRequestLimitReached;
+    if (isLimited) {
+      setLimitDialogType(type);
+      setLimitDialogOpen(true);
+      return;
+    }
+    navigate(type === 'listings' ? '/jastip/listings/create' : '/jastip/requests/create');
+  };
+
   const confirmAction = (title: string, description: string, action: () => Promise<void> | void) => {
     setDialogConfig({ title, description, action });
     setDialogOpen(true);
   };
 
   const handleStatusChange = (id: string, newStatus: string) => {
+    // When re-opening a CLOSED listing, require a new deadline AND check limit
+    if (newStatus === 'ACTIVE') {
+      const isLimited = activeTab === 'listings' ? isJastipListingLimitReached : isJastipRequestLimitReached;
+      if (isLimited) {
+        setLimitDialogType(activeTab);
+        setLimitDialogOpen(true);
+        return;
+      }
+
+      if (activeTab === 'listings') {
+        const listing = listings?.find(l => l.id === id);
+        if (listing?.status === 'CLOSED') {
+          // Pre-fill with current deadline if available
+          if (listing.deadline) {
+            const d = new Date(listing.deadline);
+            const offset = d.getTimezoneOffset() * 60000;
+            setReopenDeadline(new Date(d.getTime() - offset).toISOString().slice(0, 16));
+          } else {
+            setReopenDeadline("");
+          }
+          setReopenListingId(id);
+          setReopenDialogOpen(true);
+          return;
+        }
+      }
+    }
+
     confirmAction(
       "Konfirmasi Ubah Status",
       `Ubah status menjadi ${newStatus === 'CLOSED' ? 'Ditutup' : 'Aktif'}?`,
       async () => {
         try {
-          await api.put(`/v1/jastip/listings/${id}`, { status: newStatus });
+          const endpoint = activeTab === 'listings' ? `/v1/jastip/listings/${id}` : `/v1/jastip/requests/${id}`;
+          await api.put(endpoint, { status: newStatus });
           queryClient.invalidateQueries({ queryKey: ['jastip'] });
           toast.success("Status berhasil diubah.");
         } catch (err: any) {
@@ -105,6 +156,25 @@ export default function JastipMinePage() {
         }
       }
     );
+  };
+
+  const handleReopenConfirm = async () => {
+    if (!reopenListingId || !reopenDeadline) {
+      toast.error("Harap isi Batas Nitip terlebih dahulu.");
+      return;
+    }
+    try {
+      await api.put(`/v1/jastip/listings/${reopenListingId}`, {
+        status: 'ACTIVE',
+        deadline: new Date(reopenDeadline).toISOString(),
+      });
+      queryClient.invalidateQueries({ queryKey: ['jastip'] });
+      toast.success("Listing berhasil diaktifkan kembali.");
+      setReopenDialogOpen(false);
+      setReopenListingId(null);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Gagal mengaktifkan listing.");
+    }
   };
 
   const handleDeleteListing = (id: string) => {
@@ -152,25 +222,35 @@ export default function JastipMinePage() {
         </div>
       </section>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      {/* Tabs & Create CTA */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setActiveTab("listings")}
+            className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
+              activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
+            }`}
+          >
+            📋 Listing Saya
+            {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
+          </button>
+          <button 
+            onClick={() => setActiveTab("requests")}
+            className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
+              activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
+            }`}
+          >
+            📍 Request Saya
+            {requests && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'requests' ? 'bg-gold text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{requests.length}</span>}
+          </button>
+        </div>
+
         <button 
-          onClick={() => setActiveTab("listings")}
-          className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
-            activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
-          }`}
+          onClick={() => handleCreateClick(activeTab)}
+          className="btn btn-sm btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-5 py-2 text-[12px] hover:bg-terracotta-dark shadow-sm transition-all active:scale-[0.97] flex items-center gap-1.5"
         >
-          📋 Listing Saya
-          {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
-        </button>
-        <button 
-          onClick={() => setActiveTab("requests")}
-          className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
-            activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
-          }`}
-        >
-          📍 Request Saya
-          {requests && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'requests' ? 'bg-gold text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{requests.length}</span>}
+          <Plus size={16} />
+          {activeTab === 'listings' ? 'Buka Jastip' : 'Buat Request'}
         </button>
       </div>
 
@@ -199,7 +279,7 @@ export default function JastipMinePage() {
             <h3 className="text-lg font-semibold text-charcoal mb-2">Belum Ada {activeTab === 'listings' ? 'Listing' : 'Request'}</h3>
             <p className="mb-6 text-[14px]">Kamu belum memiliki {activeTab === 'listings' ? 'jastip yang dibuka' : 'permintaan jastip'}.</p>
             <button
-              onClick={() => navigate(activeTab === 'listings' ? '/jastip/listings/create' : '/jastip/requests/create')}
+              onClick={() => handleCreateClick(activeTab)}
               className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all active:scale-[0.97]"
             >
               {activeTab === 'listings' ? '📦 Buka Jastip Baru' : '📍 Buat Request'}
@@ -208,6 +288,7 @@ export default function JastipMinePage() {
         )}
       </div>
 
+      {/* Confirm dialog */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -217,6 +298,54 @@ export default function JastipMinePage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={() => { dialogConfig.action(); setDialogOpen(false); }} className="bg-terracotta hover:bg-terracotta-dark text-white">Ya, Lanjutkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Limit reached dialog */}
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{limitDialogType === 'listings' ? jastipListingActiveCount : jastipRequestActiveCount}/{ACTIVE_LIMIT}</strong> {limitDialogType === 'listings' ? 'jastip listing' : 'jastip request'} aktif.
+              <br/><br/>Tutup atau hapus salah satu yang sudah tidak aktif sebelum membuat yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reopen listing with new deadline dialog */}
+      <AlertDialog open={reopenDialogOpen} onOpenChange={setReopenDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktifkan Kembali Listing?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Untuk mengaktifkan kembali listing ini, kamu perlu mengatur <strong>Batas Nitip</strong> baru agar penitip tahu sampai kapan kamu menerima titipan.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="px-6 py-2">
+            <label className="text-sm font-medium text-charcoal-60 block mb-1">Batas Nitip (Baru)</label>
+            <Input
+              type="datetime-local"
+              value={reopenDeadline}
+              onChange={(e) => setReopenDeadline(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReopenConfirm}
+              className="bg-sage hover:bg-sage-dark text-white"
+              disabled={!reopenDeadline}
+            >
+              Aktifkan Kembali
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

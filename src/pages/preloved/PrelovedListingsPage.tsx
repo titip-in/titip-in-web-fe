@@ -5,6 +5,11 @@ import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCategories } from "@/hooks/useCategory";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function PrelovedListingsPage() {
   const { data: listings, isLoading } = usePrelovedListings();
@@ -12,6 +17,13 @@ export default function PrelovedListingsPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const { isPrelovedListingLimitReached, prelovedListingActiveCount, ACTIVE_LIMIT } = useActiveItemCount();
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+
+  const handleCreateClick = () => {
+    if (isPrelovedListingLimitReached) { setLimitDialogOpen(true); return; }
+    navigate('/preloved/listings/create');
+  };
 
   const getCategoryTag = (item: any) => {
     if (item.category) {
@@ -39,7 +51,7 @@ export default function PrelovedListingsPage() {
           <p className="text-[14px] text-charcoal-60 mt-1">Barang preloved dari mahasiswa Malang — beli dengan harga terjangkau</p>
         </div>
         <button 
-          onClick={() => navigate('/preloved/listings/create')}
+          onClick={handleCreateClick}
           className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all active:scale-[0.97] flex items-center gap-2"
         >
           🛍️ Jual Barang
@@ -86,6 +98,22 @@ export default function PrelovedListingsPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{prelovedListingActiveCount}/{ACTIVE_LIMIT}</strong> preloved listing aktif.<br/><br/>
+              Tandai terjual atau hapus salah satu barang sebelum menambah yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

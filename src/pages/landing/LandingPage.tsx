@@ -111,6 +111,7 @@ export default function LandingPage() {
             <a href="#fitur" className="nav-link">Fitur</a>
             <a href="#cara-kerja" className="nav-link">Cara Kerja</a>
             <a href="#showcase" className="nav-link">Preview</a>
+            <Link to="/about" className="nav-link">Tentang Kami</Link>
           </div>
 
           <div className="nav-actions">
@@ -133,6 +134,7 @@ export default function LandingPage() {
             <a href="#fitur" className="nav-link" onClick={() => setMobileNav(false)}>Fitur</a>
             <a href="#cara-kerja" className="nav-link" onClick={() => setMobileNav(false)}>Cara Kerja</a>
             <a href="#showcase" className="nav-link" onClick={() => setMobileNav(false)}>Preview</a>
+            <Link to="/about" className="nav-link" onClick={() => setMobileNav(false)}>Tentang Kami</Link>
             <div className="nav-mobile-actions">
               <Link to="/login" className="nav-btn-ghost">Masuk</Link>
               <Link to="/register" className="nav-btn-cta">Daftar Gratis</Link>
@@ -459,11 +461,19 @@ export default function LandingPage() {
               <a href="#fitur">Fitur</a>
               <a href="#cara-kerja">Cara Kerja</a>
               <a href="#showcase">Preview</a>
+              <Link to="/about">Tentang Kami</Link>
             </div>
             <div className="footer-col">
               <div className="footer-col-title">Akun</div>
               <Link to="/login">Masuk</Link>
               <Link to="/register">Daftar</Link>
+            </div>
+            <div className="footer-col">
+              <div className="footer-col-title">Hubungi Kami</div>
+              <a href="mailto:support@titipin.me" className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                support@titipin.me
+              </a>
             </div>
           </div>
 

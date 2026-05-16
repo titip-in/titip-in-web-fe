@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Plus } from "lucide-react";
 import { useMyPrelovedListings, useMyPrelovedRequests, useDeletePrelovedListing, useDeletePrelovedRequest } from "@/hooks/usePreloved";
 import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { usePrelovedListingDetail, usePrelovedRequestDetail } from "@/hooks/usePreloved";
 import { useCategories } from "@/hooks/useCategory";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 
 function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
   // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
@@ -74,6 +76,7 @@ export default function PrelovedMinePage() {
   const { data: requests, isLoading: loadingRequests } = useMyPrelovedRequests();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isPrelovedListingLimitReached, isPrelovedRequestLimitReached, ACTIVE_LIMIT, prelovedListingActiveCount, prelovedRequestActiveCount } = useActiveItemCount();
 
   const deleteListing = useDeletePrelovedListing();
   const deleteRequest = useDeletePrelovedRequest();
@@ -88,18 +91,42 @@ export default function PrelovedMinePage() {
     action: () => {}
   });
 
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+  const [limitDialogType, setLimitDialogType] = useState<"listings" | "requests">("listings");
+
+  const handleCreateClick = (type: "listings" | "requests") => {
+    const isLimited = type === "listings" ? isPrelovedListingLimitReached : isPrelovedRequestLimitReached;
+    if (isLimited) {
+      setLimitDialogType(type);
+      setLimitDialogOpen(true);
+      return;
+    }
+    navigate(type === 'listings' ? '/preloved/listings/create' : '/preloved/requests/create');
+  };
+
   const confirmAction = (title: string, description: string, action: () => Promise<void> | void) => {
     setDialogConfig({ title, description, action });
     setDialogOpen(true);
   };
 
   const handleStatusChange = (id: string, newStatus: string) => {
+    // When re-opening (AVAILABLE or OPEN), check limit first
+    if (newStatus === 'AVAILABLE' || newStatus === 'OPEN') {
+      const isLimited = activeTab === 'listings' ? isPrelovedListingLimitReached : isPrelovedRequestLimitReached;
+      if (isLimited) {
+        setLimitDialogType(activeTab);
+        setLimitDialogOpen(true);
+        return;
+      }
+    }
+
     confirmAction(
       "Konfirmasi Ubah Status",
-      `Ubah status menjadi ${newStatus === 'SOLD' ? 'Terjual' : 'Tersedia'}?`,
+      `Ubah status menjadi ${newStatus === 'SOLD' ? 'Terjual' : newStatus === 'CLOSED' ? 'Ditutup' : 'Aktif'}?`,
       async () => {
         try {
-          await api.put(`/v1/preloved/listings/${id}`, { status: newStatus });
+          const endpoint = activeTab === 'listings' ? `/v1/preloved/listings/${id}` : `/v1/preloved/requests/${id}`;
+          await api.put(endpoint, { status: newStatus });
           queryClient.invalidateQueries({ queryKey: ['preloved'] });
           toast.success("Status berhasil diubah.");
         } catch (err: any) {
@@ -154,25 +181,35 @@ export default function PrelovedMinePage() {
         </div>
       </section>
 
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      {/* Tabs & Create CTA */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setActiveTab("listings")}
+            className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
+              activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
+            }`}
+          >
+            🏷️ Barang Dijual
+            {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
+          </button>
+          <button 
+            onClick={() => setActiveTab("requests")}
+            className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
+              activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
+            }`}
+          >
+            🔍 Request Cari
+            {requests && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'requests' ? 'bg-gold text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{requests.length}</span>}
+          </button>
+        </div>
+
         <button 
-          onClick={() => setActiveTab("listings")}
-          className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
-            activeTab === 'listings' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
-          }`}
+          onClick={() => handleCreateClick(activeTab)}
+          className="btn btn-sm btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-5 py-2 text-[12px] hover:bg-terracotta-dark shadow-sm transition-all active:scale-[0.97] flex items-center gap-1.5"
         >
-          🏷️ Barang Dijual
-          {listings && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'listings' ? 'bg-terracotta text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{listings.length}</span>}
-        </button>
-        <button 
-          onClick={() => setActiveTab("requests")}
-          className={`rounded-full py-2 px-5 text-[12px] font-semibold tracking-[0.3px] transition-all duration-100 flex items-center gap-2 ${
-            activeTab === 'requests' ? 'bg-charcoal text-cream' : 'bg-cream-dark text-charcoal-60 hover:bg-cream-hover'
-          }`}
-        >
-          🔍 Request Cari
-          {requests && <span className={`py-[2px] px-[7px] rounded-full text-[9px] font-bold leading-[1.4] ${activeTab === 'requests' ? 'bg-gold text-white' : 'bg-charcoal-10 text-charcoal-60'}`}>{requests.length}</span>}
+          <Plus size={16} />
+          {activeTab === 'listings' ? 'Jual Barang' : 'Cari Barang'}
         </button>
       </div>
 
@@ -202,7 +239,7 @@ export default function PrelovedMinePage() {
             <h3 className="text-lg font-semibold text-charcoal mb-2">Belum Ada {activeTab === 'listings' ? 'Barang' : 'Request'}</h3>
             <p className="mb-6 text-[14px]">Kamu belum {activeTab === 'listings' ? 'menjual barang' : 'membuat permintaan barang'}.</p>
             <button
-              onClick={() => navigate(activeTab === 'listings' ? '/preloved/listings/create' : '/preloved/requests/create')}
+              onClick={() => handleCreateClick(activeTab)}
               className="btn btn-md btn-terra bg-terracotta text-white rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-terracotta-dark shadow-sm transition-all active:scale-[0.97]"
             >
               {activeTab === 'listings' ? '🛍️ Jual Barang' : '🔍 Cari Barang'}
@@ -211,6 +248,7 @@ export default function PrelovedMinePage() {
         )}
       </div>
 
+      {/* Confirm dialog */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -220,6 +258,23 @@ export default function PrelovedMinePage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={() => { dialogConfig.action(); setDialogOpen(false); }} className="bg-terracotta hover:bg-terracotta-dark text-white">Ya, Lanjutkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Limit reached dialog */}
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{limitDialogType === 'listings' ? prelovedListingActiveCount : prelovedRequestActiveCount}/{ACTIVE_LIMIT}</strong> {limitDialogType === 'listings' ? 'preloved listing' : 'preloved request'} aktif.<br/><br/>
+              {limitDialogType === 'listings' ? 'Tandai terjual atau hapus' : 'Tutup atau hapus'} salah satu sebelum membuat yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
