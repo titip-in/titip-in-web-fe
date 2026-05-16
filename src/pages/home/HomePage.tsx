@@ -10,6 +10,8 @@ import React, { useState } from "react";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 import { formatTimeAgoShort } from "@/lib/dateUtils";
+import { SetupProfileDialog } from "@/components/profile/SetupProfileDialog";
+import { useActivity } from "@/hooks/useActivity";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +30,7 @@ export default function HomePage() {
   const { data: jastipRequests } = useJastipRequests();
   const { data: prelovedListings, isLoading: isLoadingPreloved } = usePrelovedListings();
   const { data: categories } = useCategories();
+  const { data: activities } = useActivity(5);
 
   const [selectedJastipCat, setSelectedJastipCat] = useState<number | null>(null);
   const [selectedPrelovedCat, setSelectedPrelovedCat] = useState<number | null>(null);
@@ -44,6 +47,26 @@ export default function HomePage() {
 
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   const [limitDialogData, setLimitDialogData] = useState({ count: 0, type: "" });
+  
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (user && !user.status && !user.avatar_url) {
+      const dismissed = localStorage.getItem(`setup_dismissed_${user.id}`);
+      if (!dismissed) {
+        // Delay a bit for smooth entrance
+        const timer = setTimeout(() => setIsSetupOpen(true), 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
+  const handleDismissSetup = () => {
+    setIsSetupOpen(false);
+    if (user) {
+      localStorage.setItem(`setup_dismissed_${user.id}`, "true");
+    }
+  };
 
   const handleCreateClick = (type: "jastip-listing" | "jastip-request" | "preloved-listing", path: string) => {
     let isLimited = false;
@@ -256,20 +279,41 @@ export default function HomePage() {
               <span onClick={() => navigate('/jastip/listings')} className="text-[11px] font-semibold text-charcoal-60 bg-cream-dark rounded-full py-1 px-3 cursor-pointer hover:bg-charcoal-10 transition-colors">Semua</span>
             </div>
             <div className="px-5 py-3">
-              {jastipListings?.slice(0, 4).map((l, i) => (
-                <div key={l.id} className="flex items-start gap-3 py-3 border-b border-subtle last:border-b-0">
-                  <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${i % 3 === 0 ? 'bg-sage' : i % 3 === 1 ? 'bg-terracotta' : 'bg-gold'}`}></div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-medium text-charcoal leading-[1.3] truncate">Jastip {l.from_loc} → {l.to_loc}</div>
-                    <div className="text-[11px] text-charcoal-60 mt-[1px] truncate">{l.user?.name || 'User'} · {l.status}</div>
+              {activities && activities.length > 0 ? (
+                activities.slice(0, 5).map((a, i) => (
+                  <div key={`${a.type}-${a.id}`} className="flex items-start gap-3 py-3 border-b border-subtle last:border-b-0 cursor-pointer hover:bg-black/5 transition-colors px-1 -mx-1 rounded-lg"
+                    onClick={() => {
+                      const path = a.type === 'jastip-listing' ? `/jastip/listings/${a.id}` 
+                                 : a.type === 'jastip-request' ? `/jastip/requests/${a.id}`
+                                 : a.type === 'preloved-listing' ? `/preloved/listings/${a.id}`
+                                 : `/preloved/requests/${a.id}`;
+                      navigate(path);
+                    }}
+                  >
+                    <div className={`w-2 h-2 rounded-full mt-[5px] flex-shrink-0 ${
+                      a.type.startsWith('jastip') ? 'bg-sage' : 'bg-terracotta'
+                    }`}></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] font-medium text-charcoal leading-[1.3] flex flex-wrap gap-x-1">
+                        <span className="truncate max-w-[70px] shrink-0">{a.user_name}</span>
+                        <span className="text-charcoal-40 font-normal">
+                           {a.type === 'jastip-listing' ? 'buka jastip' 
+                             : a.type === 'jastip-request' ? 'mencari jastip'
+                             : a.type === 'preloved-listing' ? 'menjual'
+                             : 'mencari'}
+                        </span>
+                        <span className="truncate italic">{a.title}</span>
+                      </div>
+                      <div className="text-[11px] text-charcoal-40 mt-[1px] flex items-center justify-between">
+                        <span>{a.status}</span>
+                        <span>{formatTimeAgoShort(a.created_at)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-charcoal-30 font-medium whitespace-nowrap mt-[2px]">
-                    {formatTimeAgoShort(l.created_at || '')}
-                  </span>
-                </div>
-              )) || (
-                  <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
-                )}
+                ))
+              ) : (
+                <div className="py-6 text-center text-[13px] text-charcoal-60">Belum ada aktivitas.</div>
+              )}
             </div>
           </div>
 
@@ -377,11 +421,10 @@ export default function HomePage() {
           )}
         </div>
       </section>
-      {/* Limit reached dialog */}
+      
       <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-cream border-cream-dark rounded-2xl max-w-[400px]">
           <AlertDialogHeader>
-            <div className="text-4xl mb-2 text-center">🚫</div>
             <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
               Kamu sudah memiliki <strong>{limitDialogData.count}/{ACTIVE_LIMIT}</strong> {limitDialogData.type} aktif.
@@ -389,10 +432,15 @@ export default function HomePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+            <AlertDialogAction className="bg-charcoal text-white rounded-full w-full">Mengerti</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <SetupProfileDialog 
+        isOpen={isSetupOpen} 
+        onClose={handleDismissSetup} 
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useState, useRef, useEffect } from "react";
-import { useJastipListings } from "@/hooks/useJastip";
+import { useActivity, ActivityItem } from "@/hooks/useActivity";
 import { formatTimeAgoShort } from "@/lib/dateUtils";
 
 export function Topbar() {
@@ -11,7 +11,7 @@ export function Topbar() {
   const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
   const mobileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: jastipListings } = useJastipListings();
+  const { data: activities } = useActivity(10);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -134,24 +134,36 @@ export function Topbar() {
                 <h3 className="text-[14px] font-semibold text-cream">Aktivitas Terbaru</h3>
               </div>
               <div className="max-h-[400px] overflow-y-auto">
-                {jastipListings && jastipListings.length > 0 ? (
-                  jastipListings.slice(0, 5).map((l, i) => (
+                {activities && activities.length > 0 ? (
+                  activities.map((a, i) => (
                     <button
-                      key={l.id}
+                      key={`${a.type}-${a.id}`}
                       onClick={() => {
-                        navigate(`/jastip/listings/${l.id}`);
+                        const path = a.type === 'jastip-listing' ? `/jastip/listings/${a.id}` 
+                                   : a.type === 'jastip-request' ? `/jastip/requests/${a.id}`
+                                   : a.type === 'preloved-listing' ? `/preloved/listings/${a.id}`
+                                   : `/preloved/requests/${a.id}`;
+                        navigate(path);
                         setIsNotifOpen(false);
                       }}
                       className="w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors flex items-start gap-3 last:border-b-0"
                     >
-                      <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${i % 2 === 0 ? 'bg-sage' : 'bg-terracotta'}`}></div>
+                      <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        a.type.startsWith('jastip') ? 'bg-sage' : 'bg-terracotta'
+                      }`}></div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-medium text-cream leading-[1.3] flex items-center gap-1">
-                          <span className="truncate max-w-[80px] inline-block shrink-0">{l.user?.name || 'Seseorang'}</span>
-                          <span className="truncate">buka jastip {l.from_loc}</span>
+                        <div className="text-[13px] font-medium text-cream leading-[1.3] flex flex-wrap items-center gap-x-1">
+                          <span className="truncate max-w-[80px] inline-block shrink-0">{a.user_name}</span>
+                          <span className="text-cream/60">
+                            {a.type === 'jastip-listing' ? 'buka jastip' 
+                             : a.type === 'jastip-request' ? 'mencari jastip'
+                             : a.type === 'preloved-listing' ? 'menjual'
+                             : 'mencari'}
+                          </span>
+                          <span className="truncate italic">{a.title}</span>
                         </div>
                         <div className="text-[11px] text-cream/40 mt-1">
-                          {formatTimeAgoShort(l.created_at || '')}
+                          {formatTimeAgoShort(a.created_at)}
                         </div>
                       </div>
                     </button>
