@@ -8,6 +8,8 @@ export function Topbar() {
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: jastipListings } = useJastipListings();
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -29,24 +31,40 @@ export function Topbar() {
       const isPrelovedContext = window.location.pathname.includes('/preloved');
       const type = isPrelovedContext ? 'preloved' : 'jastip';
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=${type}`);
+      setIsMobileSearchActive(false);
     }
   };
+
+  useEffect(() => {
+    if (isMobileSearchActive) {
+      mobileInputRef.current?.focus();
+    }
+  }, [isMobileSearchActive]);
 
   return (
     <header className="topbar bg-charcoal flex items-center px-6 gap-4 z-[300]" style={{ gridColumn: "1 / -1", height: "var(--topbar-h)" }}>
       {/* Logo */}
-      <Link to="/" className="topbar-logo font-display text-[22px] italic font-normal text-cream tracking-tight whitespace-nowrap">
-        Titip.in
-      </Link>
+      {/* Logo */}
+      {!isMobileSearchActive && (
+        <>
+          <Link to="/" className="topbar-logo font-display text-[22px] italic font-normal text-cream tracking-tight whitespace-nowrap">
+            Titip.in
+          </Link>
 
-      <div className="topbar-divider w-[1px] h-[22px] bg-cream/10"></div>
+          <div className="topbar-divider w-[1px] h-[22px] bg-cream/10 hidden sm:block"></div>
 
-      <div className="topbar-breadcrumb flex items-center gap-2 text-[13px] text-cream/40">
-        <span>Buat dan Cari Jastip-Preloved</span>
-      </div>
+          <div className="topbar-breadcrumb items-center gap-2 text-[13px] text-cream/40 hidden sm:flex">
+            <span>Buat dan Cari Jastip-Preloved</span>
+          </div>
+        </>
+      )}
 
-      <div className="topbar-actions flex items-center gap-3 ml-auto">
-        <form onSubmit={handleSearch} className="topbar-search bg-white/5 border border-white/5 rounded-full py-2 px-4 flex items-center gap-2 transition-colors duration-100 min-w-[240px] focus-within:bg-white/10">
+      <div className={`topbar-actions flex items-center gap-3 ${isMobileSearchActive ? 'w-full' : 'ml-auto'}`}>
+        {/* Desktop Search (hidden on mobile via CSS usually, but we manage it here too) */}
+        <form 
+          onSubmit={handleSearch} 
+          className={`topbar-search bg-white/5 border border-white/5 rounded-full py-2 px-4 items-center gap-2 transition-colors duration-100 min-w-[240px] focus-within:bg-white/10 hidden sm:flex`}
+        >
           <svg className="topbar-search-icon text-[14px] opacity-50 text-cream w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
@@ -57,19 +75,47 @@ export function Topbar() {
             placeholder="Cari jastip atau barang..."
             className="topbar-search-text text-[13px] text-cream bg-transparent border-none outline-none w-full placeholder:text-cream/35 font-body"
           />
-          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold hidden sm:inline">↵</span>
+          <span className="topbar-search-kbd ml-auto text-[10px] text-cream/25 bg-white/10 py-[2px] px-1.5 rounded font-body font-semibold">↵</span>
         </form>
 
-        {/* Mobile search button — visible only when search bar is hidden */}
-        <Link
-          to="/search"
-          className="topbar-mobile-search w-9 h-9 rounded-md bg-white/5 border-none flex items-center justify-center cursor-pointer text-cream/60 hover:bg-white/10 transition-colors sm:hidden"
-          aria-label="Cari"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </Link>
+        {/* Mobile Search Active State */}
+        {isMobileSearchActive && (
+          <form onSubmit={handleSearch} className="flex-1 flex items-center gap-2 bg-white/10 rounded-full py-2 px-4 border border-white/10 sm:hidden animate-in slide-in-from-right-4 duration-200">
+            <button 
+              type="button" 
+              onClick={() => setIsMobileSearchActive(false)}
+              className="p-1 text-cream/40 hover:text-cream"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            <input
+              ref={mobileInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari jastip/barang..."
+              className="flex-1 text-[14px] text-cream bg-transparent border-none outline-none placeholder:text-cream/30"
+            />
+            {searchQuery && (
+              <button type="submit" className="text-sage text-[13px] font-bold">Cari</button>
+            )}
+          </form>
+        )}
+
+        {/* Mobile search toggle button */}
+        {!isMobileSearchActive && (
+          <button
+            onClick={() => setIsMobileSearchActive(true)}
+            className="topbar-mobile-search w-9 h-9 rounded-md bg-white/5 border-none flex items-center justify-center cursor-pointer text-cream/60 hover:bg-white/10 transition-colors sm:hidden"
+            aria-label="Cari"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        )}
 
         <div className="relative" ref={notifRef}>
           <button 
