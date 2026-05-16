@@ -9,7 +9,8 @@ interface PrelovedCardProps {
     name: string;
     avatarClass: string;
     avatarInitial: string;
-    wa_number?: string;
+    avatar_url?: string | null;
+    wa_number?: string | null;
   };
   timeAgo: string;
   status: "AVAILABLE" | "SOLD" | "RESERVED" | "OPEN" | "FOUND" | "CLOSED";
@@ -89,8 +90,8 @@ export function PrelovedCard({
           )}
           {/* Status badge on image */}
           <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-            <div className={`status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm ${isAvailable ? 'bg-sage text-white' : status === 'SOLD' ? 'bg-charcoal text-white' : 'bg-gold text-white'}`}>
-              {status === 'AVAILABLE' ? 'Tersedia' : status === 'SOLD' ? 'Terjual' : status === 'RESERVED' ? 'Dipesan' : status}
+            <div className={`status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase shadow-sm ${isAvailable ? 'bg-sage text-white' : status === 'SOLD' || status === 'FOUND' ? 'bg-charcoal text-white' : status === 'RESERVED' ? 'bg-gold text-white' : 'bg-charcoal-30 text-white'}`}>
+              {status === 'AVAILABLE' ? 'Tersedia' : status === 'SOLD' ? 'Terjual' : status === 'RESERVED' ? 'Dipesan' : status === 'OPEN' ? 'Terbuka' : status === 'FOUND' ? 'Ditemukan' : status === 'CLOSED' ? 'Ditutup' : status}
             </div>
             {isOwner && (
                <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-sm">
@@ -117,8 +118,12 @@ export function PrelovedCard({
         {hideImage && (
           <div className="flex justify-between items-start mb-4 pb-3 border-b border-subtle">
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shrink-0 ${user.avatarClass}`}>
-                {user.avatarInitial}
+              <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-[12px] font-bold text-white shrink-0 ${user.avatarClass} border border-subtle`}>
+                {user.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  user.avatarInitial
+                )}
               </div>
               <div>
                 <div className="text-[13px] font-semibold text-charcoal">{user.name}</div>
@@ -126,10 +131,15 @@ export function PrelovedCard({
               </div>
             </div>
             <div className="flex flex-col items-end gap-1.5 shrink-0">
-              <div className={`inline-flex items-center gap-1 py-0.5 px-2.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${isAvailable ? 'bg-terracotta-pale text-terracotta-dark' : status === 'SOLD' ? 'bg-charcoal text-white' : 'bg-gold-pale text-gold-dark'}`}>
+              <div className={`inline-flex items-center gap-1 py-0.5 px-2.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${isAvailable ? 'bg-terracotta-pale text-terracotta-dark' : status === 'SOLD' || status === 'FOUND' ? 'bg-charcoal text-white' : 'bg-gold-pale text-gold-dark'}`}>
                 <div className="w-[4px] h-[4px] rounded-full bg-current"></div>
-                {status === 'AVAILABLE' ? 'Tersedia' : status === 'OPEN' ? 'Terbuka' : status === 'SOLD' ? 'Terjual' : status === 'FOUND' ? 'Sudah Ditemukan' : status}
+                {status === 'AVAILABLE' ? 'Tersedia' : status === 'OPEN' ? 'Terbuka' : status === 'SOLD' ? 'Terjual' : status === 'FOUND' ? 'Ditemukan' : status === 'CLOSED' ? 'Ditutup' : status}
               </div>
+              {isOwner && (
+                <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
+                  Milik Saya
+                </span>
+              )}
               {category && (
                 <div className="text-[10px] font-medium text-charcoal-60 px-2 py-0.5 bg-cream-dark rounded-full">
                   {category}
@@ -163,7 +173,13 @@ export function PrelovedCard({
           <div className="mt-3 pt-3 border-t border-subtle flex gap-2">
             {onStatusChange && (
               <button
-                onClick={(e) => { e.stopPropagation(); onStatusChange(isAvailable ? 'SOLD' : 'AVAILABLE'); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  const targetStatus = isAvailable 
+                    ? (status === 'OPEN' ? 'FOUND' : 'SOLD') 
+                    : (status === 'FOUND' ? 'OPEN' : 'AVAILABLE');
+                  onStatusChange(targetStatus); 
+                }}
                 className={`flex-1 py-2 px-3 rounded-full text-[11px] font-semibold transition-colors ${
                   isAvailable 
                     ? 'bg-charcoal text-cream hover:bg-charcoal-80' 
@@ -171,7 +187,7 @@ export function PrelovedCard({
                 }`}
               >
                 {isAvailable ? (
-                  <span className="flex items-center justify-center gap-1.5"><Check size={14} /> Tandai Terjual</span>
+                  <span className="flex items-center justify-center gap-1.5"><Check size={14} /> Tandai {status === 'OPEN' ? 'Ditemukan' : 'Terjual'}</span>
                 ) : (
                   <span className="flex items-center justify-center gap-1.5"><RotateCcw size={14} /> Buka Lagi</span>
                 )}

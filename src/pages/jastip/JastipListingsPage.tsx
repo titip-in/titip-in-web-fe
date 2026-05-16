@@ -74,7 +74,13 @@ export default function JastipListingsPage() {
           filteredListings.map((listing) => (
             <JastipCard 
               key={listing.id}
-              user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
+              user={{ 
+                name: listing.user?.name || "User", 
+                avatarClass: "bg-gradient-to-br from-sage to-sage-dark", 
+                avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), 
+                avatar_url: listing.user?.avatar_url,
+                wa_number: listing.user?.wa_number 
+              }}
               timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
               status={listing.status}
               title={listing.title}

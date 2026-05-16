@@ -268,6 +268,50 @@
   border-color: rgba(143,175,138,0.5);
 }
 
+/* ── INSTAGRAM SECTION ── */
+.about-instagram {
+  background: white;
+  border-top: 1px solid var(--cream-dark);
+  border-bottom: 1px solid var(--cream-dark);
+}
+.about-instagram-card {
+  background: var(--charcoal);
+  border-radius: 32px;
+  padding: 80px 40px;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+.about-instagram-icon {
+  width: 80px; height: 80px; border-radius: 24px;
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: white; margin: 0 auto 32px;
+  box-shadow: 0 10px 30px rgba(220, 39, 67, 0.3);
+}
+.about-instagram-title {
+  font-family: var(--font-display); font-size: clamp(24px, 4vw, 40px);
+  font-weight: 300; font-style: italic; color: var(--cream);
+  line-height: 1.2; margin-bottom: 20px;
+}
+.about-instagram-body {
+  font-size: 16px; line-height: 1.7; color: rgba(245,242,236,0.6);
+  max-width: 500px; margin: 0 auto 32px;
+}
+.about-instagram-link {
+  display: inline-block;
+  font-size: 20px; font-weight: 700; color: var(--sage);
+  text-decoration: none; padding-bottom: 4px;
+  border-bottom: 2px solid rgba(143,175,138,0.3);
+  transition: border-color 0.2s, transform 0.2s;
+}
+.about-instagram-link:hover {
+  border-color: var(--sage);
+  transform: translateY(-2px);
+}
+
 /* ── CTA BANNER ── */
 .about-cta {
   background: linear-gradient(135deg, var(--terracotta) 0%, #b85a40 100%);

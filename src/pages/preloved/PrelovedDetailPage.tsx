@@ -116,8 +116,9 @@ export default function PrelovedDetailPage() {
           <div className="p-8 lg:p-12 flex flex-col">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <div className="status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase bg-sage text-white mb-3">
-                  {item.status}
+                <div className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[12px] font-bold tracking-wide uppercase ${item.status === 'AVAILABLE' ? 'bg-sage text-white' : item.status === 'SOLD' ? 'bg-charcoal text-white' : 'bg-charcoal-20 text-charcoal-60'} mb-3`}>
+                  <div className="w-[6px] h-[6px] rounded-full bg-current"></div>
+                  {item.status === 'AVAILABLE' ? 'Tersedia' : item.status === 'SOLD' ? 'Terjual' : item.status === 'CLOSED' ? 'Ditutup' : item.status}
                 </div>
                 <h1 className="font-display text-[36px] font-medium text-charcoal leading-tight mb-2">{item.title}</h1>
                 <div className="text-[28px] font-bold text-terracotta">{formatRupiah(item.price)}</div>
@@ -192,12 +193,18 @@ export default function PrelovedDetailPage() {
           {/* User Info Panel */}
           <div className="bg-elevated border border-subtle rounded-2xl p-8 shadow-sm">
             <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-lg font-bold text-white">
-                {(item.user?.name || "U").charAt(0).toUpperCase()}
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-terracotta to-terracotta-dark flex items-center justify-center text-lg font-bold text-white border border-subtle">
+                {item.user?.avatar_url ? (
+                  <img src={item.user.avatar_url} alt={item.user.name} className="w-full h-full object-cover" />
+                ) : (
+                  (item.user?.name || "U").charAt(0).toUpperCase()
+                )}
               </div>
               <div>
                 <div className="text-sm font-semibold text-charcoal">{item.user?.name || "User"}</div>
-                <div className="text-xs text-charcoal-40">{item.user?.status || "User belum mengisi status"}</div>
+                <div className="text-[12px] text-charcoal-60 font-medium px-2 py-0.5 bg-charcoal-10 rounded-md inline-block mt-1">
+                  {item.user?.status || "Member Titip.in"}
+                </div>
               </div>
             </div>
 
