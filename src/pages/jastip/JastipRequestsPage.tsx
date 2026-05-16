@@ -1,13 +1,25 @@
-import React from "react";
+import React, { useState } from "react";
 import { useJastipRequests } from "@/hooks/useJastip";
 import { JastipCard } from "@/components/home/JastipCard";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function JastipRequestsPage() {
   const { data: requests, isLoading } = useJastipRequests();
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const { isJastipRequestLimitReached, jastipRequestActiveCount, ACTIVE_LIMIT } = useActiveItemCount();
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
+
+  const handleCreateClick = () => {
+    if (isJastipRequestLimitReached) { setLimitDialogOpen(true); return; }
+    navigate('/jastip/requests/create');
+  };
 
   return (
     <div className="w-full animate-fade-in">
@@ -17,7 +29,7 @@ export default function JastipRequestsPage() {
           <p className="text-[14px] text-charcoal-60 mt-1">Temukan penitip yang butuh bantuan — ambil request untuk fee tambahan</p>
         </div>
         <button 
-          onClick={() => navigate('/jastip/requests/create')}
+          onClick={handleCreateClick}
           className="btn btn-md btn-primary bg-charcoal text-cream rounded-full font-body font-semibold px-6 py-3 text-[14px] hover:bg-charcoal-80 shadow-sm transition-all active:scale-[0.97] flex items-center gap-2"
         >
           📍 Buat Request
@@ -56,6 +68,22 @@ export default function JastipRequestsPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={limitDialogOpen} onOpenChange={setLimitDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="text-4xl mb-2 text-center">🚫</div>
+            <AlertDialogTitle className="text-center">Batas Aktif Tercapai</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Kamu sudah memiliki <strong>{jastipRequestActiveCount}/{ACTIVE_LIMIT}</strong> jastip request aktif.<br/><br/>
+              Tutup atau hapus salah satu request sebelum membuat yang baru.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setLimitDialogOpen(false)} className="bg-charcoal hover:bg-charcoal-80 text-white w-full">Oke, Mengerti</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -121,7 +121,7 @@ export function JastipCard({
         <div className="jcard-footer mt-auto pt-3 border-t border-subtle flex justify-between items-center gap-2">
           {deadline && (
             <div className="jcard-deadline text-[12px] text-charcoal-60 font-medium">
-              Berangkat: <br/><span className="text-charcoal font-semibold">{deadline}</span>
+              Batas Nitip: <br/><span className="text-charcoal font-semibold">{deadline}</span>
             </div>
           )}
           

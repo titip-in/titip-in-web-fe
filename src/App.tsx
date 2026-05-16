@@ -30,6 +30,9 @@ import SearchPage from '@/pages/search/SearchPage'
 // Profile Page
 import ProfilePage from '@/pages/profile/ProfilePage'
 
+// About Page
+import AboutPage from '@/pages/about/AboutPage'
+
 import { MainLayout } from '@/components/layout/MainLayout'
 
 // Guard untuk route yang butuh login
@@ -52,6 +55,9 @@ export default function App() {
       <Routes>
         {/* Landing page — public, first impression */}
         <Route path="/landing" element={<GuestRoute><LandingPage /></GuestRoute>} />
+
+        {/* About page — public, no auth required */}
+        <Route path="/about" element={<AboutPage />} />
 
         {/* Auth routes */}
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />

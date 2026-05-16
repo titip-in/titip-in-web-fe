@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [status, setStatus] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,6 +31,7 @@ export default function RegisterPage() {
         name,
         email,
         wa_number: whatsappNumber,
+        status,
         password,
       });
 
@@ -68,12 +70,12 @@ export default function RegisterPage() {
             style={{ color: "var(--cream)", fontWeight: 400 }}>
             Gabung dengan
             <br />
-            Komunitas Titip.in
+            Titip.in
           </h1>
 
           <p className="text-base leading-relaxed mb-10"
             style={{ color: "rgba(245,242,236,0.5)" }}>
-            Daftar gratis dan mulai temukan jastip serta preloved terbaik dari sesama mahasiswa Malang.
+            Daftar gratis dan mulai temukan jastip serta preloved terbaik dari sesama warga Malang.
           </p>
 
           <div className="space-y-5">
@@ -119,7 +121,7 @@ export default function RegisterPage() {
               Daftar Akun Baru
             </h2>
             <p className="text-sm" style={{ color: "var(--charcoal-60)" }}>
-              Bergabung dengan komunitas Titip.in — gratis!
+              Bergabung dengan Titip.in — gratis!
             </p>
           </div>
 
@@ -183,6 +185,25 @@ export default function RegisterPage() {
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   className="pl-10 h-11 rounded-xl border-cream-dark bg-warm-white focus:bg-white transition-colors"
                   placeholder="+62 812-3456-7890"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="status" className="text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--charcoal-60)" }}>
+                Status (Opsional)
+              </Label>
+              <div className="relative mt-2">
+                <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2"
+                  style={{ color: "var(--charcoal-30)" }} />
+                <Input
+                  id="status"
+                  type="text"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="pl-10 h-11 rounded-xl border-cream-dark bg-warm-white focus:bg-white transition-colors"
+                  placeholder="Contoh: Mahasiswa FILKOM UB"
                 />
               </div>
             </div>

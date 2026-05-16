@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Package, ShoppingBag, LogOut } from "lucide-react";
+import { Package, ShoppingBag, LogOut, Mail, Info } from "lucide-react";
+import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
@@ -16,6 +17,17 @@ export default function ProfilePage() {
   const token = useAuthStore((state) => state.token);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const { 
+    jastipListingActiveCount, 
+    jastipRequestActiveCount, 
+    prelovedListingActiveCount, 
+    prelovedRequestActiveCount,
+    isJastipListingLimitReached,
+    isJastipRequestLimitReached,
+    isPrelovedListingLimitReached,
+    isPrelovedRequestLimitReached,
+    ACTIVE_LIMIT 
+  } = useActiveItemCount();
 
   const handleLogout = () => {
     logout();
@@ -24,12 +36,14 @@ export default function ProfilePage() {
 
   const [name, setName] = useState("");
   const [waNumber, setWaNumber] = useState("");
+  const [status, setStatus] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
       setWaNumber(profile.wa_number || "");
+      setStatus(profile.status || "");
       setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
@@ -40,6 +54,7 @@ export default function ProfilePage() {
       const updatedUser = await updateMutation.mutateAsync({
         name,
         wa_number: waNumber,
+        status,
         avatar_url: avatarUrl
       });
       // Update the local auth store so sidebar/topbar updates immediately
@@ -110,6 +125,17 @@ export default function ProfilePage() {
             />
           </div>
           <div>
+            <Label htmlFor="status" className="text-sm font-medium text-charcoal-60">Status Profil</Label>
+            <Input
+              id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="mt-1"
+              placeholder="Contoh: Mahasiswa FILKOM UB"
+            />
+            <p className="text-xs text-charcoal-30 mt-1">Status ini akan ditampilkan di halaman detail Jastip dan Preloved Anda.</p>
+          </div>
+          <div>
             <Label htmlFor="wa_number" className="text-sm font-medium text-charcoal-60">Nomor WhatsApp</Label>
             <Input
               id="wa_number"
@@ -133,6 +159,88 @@ export default function ProfilePage() {
           </Button>
         </div>
       </form>
+
+      {/* Limit Status Section */}
+      <div className="mt-8 mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="font-display text-[20px] font-medium text-charcoal">Batas Penggunaan Aktif</h2>
+          <div className="group relative">
+            <Info size={16} className="text-charcoal-30 cursor-help" />
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 p-3 bg-charcoal text-cream text-[11px] rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-xl z-20">
+              Setiap kategori dibatasi maksimal {ACTIVE_LIMIT} item aktif secara bersamaan untuk menjaga kualitas layanan Titip.in.
+              <div className="absolute left-1/2 -translate-x-1/2 top-full border-4 border-transparent border-t-charcoal"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-elevated border border-subtle rounded-xl p-6 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            {/* Jastip Listing */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[13px] font-semibold text-charcoal flex items-center gap-1.5">📦 Jastip Listing</span>
+                <span className={`text-[12px] font-bold ${isJastipListingLimitReached ? 'text-terracotta' : 'text-charcoal-60'}`}>
+                  {jastipListingActiveCount}/{ACTIVE_LIMIT}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-charcoal-10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out ${isJastipListingLimitReached ? 'bg-terracotta' : 'bg-sage'}`}
+                  style={{ width: `${(jastipListingActiveCount / ACTIVE_LIMIT) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Jastip Request */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[13px] font-semibold text-charcoal flex items-center gap-1.5">📍 Jastip Request</span>
+                <span className={`text-[12px] font-bold ${isJastipRequestLimitReached ? 'text-terracotta' : 'text-charcoal-60'}`}>
+                  {jastipRequestActiveCount}/{ACTIVE_LIMIT}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-charcoal-10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out ${isJastipRequestLimitReached ? 'bg-terracotta' : 'bg-gold'}`}
+                  style={{ width: `${(jastipRequestActiveCount / ACTIVE_LIMIT) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Preloved Listing */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[13px] font-semibold text-charcoal flex items-center gap-1.5">🛍️ Preloved Listing</span>
+                <span className={`text-[12px] font-bold ${isPrelovedListingLimitReached ? 'text-terracotta' : 'text-charcoal-60'}`}>
+                  {prelovedListingActiveCount}/{ACTIVE_LIMIT}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-charcoal-10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out ${isPrelovedListingLimitReached ? 'bg-terracotta' : 'bg-terracotta-light'}`}
+                  style={{ width: `${(prelovedListingActiveCount / ACTIVE_LIMIT) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Preloved Request */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-[13px] font-semibold text-charcoal flex items-center gap-1.5">🔍 Preloved Request</span>
+                <span className={`text-[12px] font-bold ${isPrelovedRequestLimitReached ? 'text-terracotta' : 'text-charcoal-60'}`}>
+                  {prelovedRequestActiveCount}/{ACTIVE_LIMIT}
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-charcoal-10 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-700 ease-out ${isPrelovedRequestLimitReached ? 'bg-terracotta' : 'bg-charcoal-60'}`}
+                  style={{ width: `${(prelovedRequestActiveCount / ACTIVE_LIMIT) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-8 mb-4">
         <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Aktivitas Saya</h2>
@@ -163,6 +271,22 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 mb-4">
+        <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Bantuan & Dukungan</h2>
+        <a 
+          href="mailto:support@titipin.me"
+          className="bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-charcoal-30 transition-all duration-200 flex items-center gap-4 block"
+        >
+          <div className="w-12 h-12 rounded-full bg-gold-pale text-gold-dark flex items-center justify-center flex-shrink-0">
+            <Mail size={24} />
+          </div>
+          <div>
+            <div className="font-medium text-charcoal text-[15px]">Hubungi Support</div>
+            <div className="text-[13px] text-charcoal-60 mt-0.5">Kirim email ke support@titipin.me</div>
+          </div>
+        </a>
       </div>
 
       <div className="mt-8 border-t border-subtle pt-8 flex justify-center pb-8">

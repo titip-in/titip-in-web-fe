@@ -160,7 +160,7 @@ export default function JastipCreatePage() {
             </div>
           </div>
           <div>
-            <Label htmlFor="deadline" className="text-sm font-medium text-charcoal-60">Batas Waktu Titipan / Berangkat</Label>
+            <Label htmlFor="deadline" className="text-sm font-medium text-charcoal-60">Batas Nitip</Label>
             <Input
               id="deadline"
               type="datetime-local"

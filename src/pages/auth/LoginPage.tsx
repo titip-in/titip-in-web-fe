@@ -7,12 +7,22 @@ import { useAuthStore } from "@/stores/authStore";
 import { User, ApiResponse } from "@/types/api";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowRight, Package, ShoppingBag, MessageCircle } from "lucide-react";
+import { Mail, Lock, ArrowRight, Package, ShoppingBag, MessageCircle, Info } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isForgotDialogOpen, setIsForgotDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,12 +69,12 @@ export default function LoginPage() {
             style={{ color: "var(--cream)", fontWeight: 400 }}>
             Jastip & Preloved
             <br />
-            untuk Mahasiswa Malang
+            untuk Warga Malang
           </h1>
 
           <p className="text-base leading-relaxed mb-10"
             style={{ color: "rgba(245,242,236,0.5)" }}>
-            Platform terpusat yang menghubungkan mahasiswa untuk jasa titip dan barang preloved — langsung via WhatsApp.
+            Platform terpusat yang menghubungkan warga Malang untuk jasa titip dan barang preloved — langsung via WhatsApp.
           </p>
 
           <div className="space-y-5">
@@ -165,10 +175,14 @@ export default function LoginPage() {
                   Ingat saya
                 </Label>
               </div>
-              <a href="#" className="text-sm font-medium hover:underline"
-                style={{ color: "var(--sage-dark)" }}>
+              <button
+                type="button"
+                onClick={() => setIsForgotDialogOpen(true)}
+                className="text-sm font-medium hover:underline"
+                style={{ color: "var(--sage-dark)" }}
+              >
                 Lupa password?
-              </a>
+              </button>
             </div>
 
             <Button
@@ -203,6 +217,32 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={isForgotDialogOpen} onOpenChange={setIsForgotDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="w-12 h-12 rounded-full bg-gold-pale text-gold-dark flex items-center justify-center mb-4">
+              <Info size={24} />
+            </div>
+            <AlertDialogTitle>Lupa Password?</AlertDialogTitle>
+            <AlertDialogDescription className="text-charcoal-60 space-y-3">
+              <p>Fitur reset password mandiri sedang dalam pengembangan.</p>
+              <p>Untuk saat ini, silakan hubungi tim support kami melalui email untuk melakukan reset password akun Anda:</p>
+              <div className="bg-cream-dark p-3 rounded-lg border border-subtle">
+                <a href="mailto:support@titipin.me" className="text-sage-dark font-bold hover:underline flex items-center gap-2">
+                  <Mail size={16} />
+                  support@titipin.me
+                </a>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setIsForgotDialogOpen(false)} className="bg-charcoal text-cream hover:bg-charcoal-80 rounded-full">
+              Oke, Mengerti
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
