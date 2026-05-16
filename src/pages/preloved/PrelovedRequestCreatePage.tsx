@@ -49,7 +49,7 @@ export default function PrelovedRequestCreatePage() {
         await createMutation.mutateAsync(payload);
         toast.success("Request preloved berhasil dibuat.");
       }
-      navigate('/preloved/mine');
+      navigate('/preloved/mine?tab=requests');
     } catch (error: any) {
       toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} request preloved.`);
     }

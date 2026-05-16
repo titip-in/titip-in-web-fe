@@ -114,8 +114,33 @@ export function PrelovedCard({
       )}
 
       <div className="p-4 flex flex-col flex-grow">
+        {hideImage && (
+          <div className="flex justify-between items-start mb-4 pb-3 border-b border-subtle">
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white shrink-0 ${user.avatarClass}`}>
+                {user.avatarInitial}
+              </div>
+              <div>
+                <div className="text-[13px] font-semibold text-charcoal">{user.name}</div>
+                <div className="text-[10px] text-charcoal-60 mt-[1px]">Dibuat {timeAgo}</div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
+              <div className={`inline-flex items-center gap-1 py-0.5 px-2.5 rounded-full text-[9px] font-bold tracking-wide uppercase ${isAvailable ? 'bg-terracotta-pale text-terracotta-dark' : status === 'SOLD' ? 'bg-charcoal text-white' : 'bg-gold-pale text-gold-dark'}`}>
+                <div className="w-[4px] h-[4px] rounded-full bg-current"></div>
+                {status === 'AVAILABLE' ? 'Tersedia' : status === 'OPEN' ? 'Terbuka' : status === 'SOLD' ? 'Terjual' : status === 'FOUND' ? 'Sudah Ditemukan' : status}
+              </div>
+              {category && (
+                <div className="text-[10px] font-medium text-charcoal-60 px-2 py-0.5 bg-cream-dark rounded-full">
+                  {category}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Title */}
-        <h3 className="font-display text-[14px] font-medium text-charcoal mb-1 leading-[1.3] line-clamp-2">{title}</h3>
+        <h3 className="font-display text-[15px] font-medium text-charcoal mb-1.5 leading-[1.3] line-clamp-2">{title}</h3>
         
         {description && (
           <p className="text-[12px] text-charcoal-60 mb-2 line-clamp-2">{description}</p>
@@ -124,10 +149,12 @@ export function PrelovedCard({
         {/* Price + Seller row */}
         <div className="mt-auto pt-2">
           <div className="flex justify-between items-center">
-            <span className="text-[15px] font-bold text-terracotta">
+            <span className="text-[16px] font-bold text-terracotta">
               {price !== undefined ? formatRupiah(price) : maxPrice ? `Max ${formatRupiah(maxPrice)}` : 'Harga Nego'}
             </span>
-            <span className="text-[11px] text-charcoal-60 truncate ml-2">{user.name}</span>
+            {!hideImage && (
+              <span className="text-[11px] text-charcoal-60 truncate ml-2">{user.name}</span>
+            )}
           </div>
         </div>
 

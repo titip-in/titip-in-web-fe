@@ -133,6 +133,7 @@ export default function HomePage() {
                   user={{ name: listing.user?.name || "User", avatarClass: "bg-gradient-to-br from-sage to-sage-dark", avatarInitial: (listing.user?.name || "U").charAt(0).toUpperCase(), wa_number: listing.user?.wa_number }}
                   timeAgo={new Date(listing.created_at || '').toLocaleDateString('id-ID')}
                   status={listing.status}
+                  title={listing.title}
                   route={{ from: listing.from_loc, to: listing.to_loc }}
                   tags={[getCategoryTag(listing)]}
                   deadline={new Date(listing.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}

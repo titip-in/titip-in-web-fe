@@ -28,11 +28,11 @@ export default function JastipRequestDetailPage() {
   const { data: categories } = useCategories();
   const deleteMutation = useDeleteJastipRequest();
 
-  const getCategoryName = () => {
-    if (item?.category) return item.category.name;
+  const getCategoryTag = () => {
+    if (item?.category) return `${item.category.icon || ''} ${item.category.name}`.trim();
     if (item?.category_id && categories) {
       const cat = categories.find(c => c.id === item.category_id);
-      if (cat) return cat.name;
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
     }
     return "Umum";
   };
@@ -102,9 +102,12 @@ export default function JastipRequestDetailPage() {
                 <div className="status-pill inline-flex items-center gap-1 py-1 px-3 rounded-full text-[10px] font-bold tracking-wide uppercase bg-gold-pale text-gold-dark mb-4">
                   {item.status === 'OPEN' ? 'Terbuka' : item.status === 'TAKEN' ? 'Diambil' : 'Ditutup'}
                 </div>
-                <div className="flex items-center gap-4 text-[32px] font-display font-medium text-charcoal">
+                <h1 className="text-[32px] font-display font-medium text-charcoal leading-tight mb-2">
+                  {item.title || "Request Jastip"}
+                </h1>
+                <div className="flex items-center gap-3 text-[18px] font-medium text-charcoal-60">
                   <span>{item.from_loc}</span>
-                  <svg className="w-8 h-8 text-charcoal-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-charcoal-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                   </svg>
                   <span>{item.to_loc}</span>
@@ -114,16 +117,16 @@ export default function JastipRequestDetailPage() {
 
             <div className="space-y-8">
               <div>
-                <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-3">Catatan Request</h3>
+                <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-3">Deskripsi / Catatan</h3>
                 <div className="bg-cream-dark/30 rounded-xl p-6 italic text-charcoal-60 text-lg">
-                  "{item.notes || 'Tidak ada catatan tambahan.'}"
+                  "{item.description || item.notes || 'Tidak ada catatan tambahan.'}"
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kategori</h3>
-                  <p className="text-charcoal font-semibold text-lg">{getCategoryName()}</p>
+                  <p className="text-charcoal font-semibold text-lg">{getCategoryTag()}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Dibuat Pada</h3>

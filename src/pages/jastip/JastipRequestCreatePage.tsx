@@ -11,9 +11,10 @@ export default function JastipRequestCreatePage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
 
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [fromLoc, setFromLoc] = useState("");
   const [toLoc, setToLoc] = useState("");
-  const [notes, setNotes] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(null);
   
   const navigate = useNavigate();
@@ -24,9 +25,10 @@ export default function JastipRequestCreatePage() {
 
   useEffect(() => {
     if (isEdit && requestDetail) {
+      setTitle(requestDetail.title || "");
+      setDescription(requestDetail.description || "");
       setFromLoc(requestDetail.from_loc);
       setToLoc(requestDetail.to_loc);
-      setNotes(requestDetail.notes || "");
       setCategoryId(requestDetail.category_id || null);
     }
   }, [isEdit, requestDetail]);
@@ -36,9 +38,10 @@ export default function JastipRequestCreatePage() {
     try {
       const payload = {
         category_id: categoryId,
+        title,
+        description: description || null,
         from_loc: fromLoc,
         to_loc: toLoc,
-        notes: notes,
         status: isEdit && requestDetail ? requestDetail.status : "OPEN"
       };
 
@@ -49,7 +52,7 @@ export default function JastipRequestCreatePage() {
         await createMutation.mutateAsync(payload);
         toast.success("Request jastip berhasil dibuat.");
       }
-      navigate('/jastip/mine');
+      navigate('/jastip/mine?tab=requests');
     } catch (error: any) {
       toast.error(error.response?.data?.message || `Gagal ${isEdit ? 'memperbarui' : 'membuat'} request jastip.`);
     }
@@ -97,36 +100,49 @@ export default function JastipRequestCreatePage() {
             )}
           </div>
           <div>
-            <Label htmlFor="from_loc" className="text-sm font-medium text-charcoal-60">Barang dari Mana?</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-charcoal-60">Judul Request</Label>
             <Input
-              id="from_loc"
+              id="title"
               required
-              value={fromLoc}
-              onChange={(e) => setFromLoc(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Sawojajar"
+              placeholder="Contoh: Titip Beli Kopi"
             />
           </div>
           <div>
-            <Label htmlFor="to_loc" className="text-sm font-medium text-charcoal-60">Tujuan Pengiriman</Label>
-            <Input
-              id="to_loc"
-              required
-              value={toLoc}
-              onChange={(e) => setToLoc(e.target.value)}
-              className="mt-1"
-              placeholder="Contoh: Dinoyo"
-            />
-          </div>
-          <div>
-            <Label htmlFor="notes" className="text-sm font-medium text-charcoal-60">Catatan Tambahan (Opsional)</Label>
+            <Label htmlFor="description" className="text-sm font-medium text-charcoal-60">Deskripsi (Opsional)</Label>
             <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="mt-1 flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Contoh: Titip dokumen penting, harap hati-hati..."
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 flex min-h-[80px] w-full rounded-md border border-subtle bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-charcoal-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Tuliskan deskripsi lengkap barang yang kamu minta tolong belikan..."
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="from_loc" className="text-sm font-medium text-charcoal-60">Barang dari Mana?</Label>
+              <Input
+                id="from_loc"
+                required
+                value={fromLoc}
+                onChange={(e) => setFromLoc(e.target.value)}
+                className="mt-1"
+                placeholder="Contoh: Sawojajar"
+              />
+            </div>
+            <div>
+              <Label htmlFor="to_loc" className="text-sm font-medium text-charcoal-60">Tujuan Pengiriman</Label>
+              <Input
+                id="to_loc"
+                required
+                value={toLoc}
+                onChange={(e) => setToLoc(e.target.value)}
+                className="mt-1"
+                placeholder="Contoh: Dinoyo"
+              />
+            </div>
           </div>
         </div>
 

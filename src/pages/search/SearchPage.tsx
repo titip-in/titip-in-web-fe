@@ -146,6 +146,7 @@ export default function SearchPage() {
                 }}
                 timeAgo={new Date(item.created_at || '').toLocaleDateString('id-ID')}
                 status={item.status}
+                title={item.title}
                 route={{ from: item.from_loc, to: item.to_loc }}
                 tags={[item.category ? `${item.category.icon || ''} ${item.category.name}`.trim() : "Umum"]}
                 deadline={item.deadline ? new Date(item.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}

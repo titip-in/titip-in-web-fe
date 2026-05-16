@@ -75,6 +75,8 @@ export interface JastipListing {
   id: string; // UUID string
   user_id: number;
   category_id: number | null;
+  title: string;
+  description: string | null;
   from_loc: string;
   to_loc: string;
   deadline: string;
@@ -93,6 +95,8 @@ export interface JastipListing {
 
 export interface CreateJastipListingPayload {
   category_id?: number | null;
+  title: string;
+  description?: string | null;
   from_loc: string;
   to_loc: string;
   deadline: string;
@@ -108,6 +112,8 @@ export interface JastipRequest {
   id: string; // UUID string
   user_id: number;
   category_id: number | null;
+  title: string;
+  description: string | null;
   from_loc: string;
   to_loc: string;
   notes: string | null;
@@ -121,6 +127,8 @@ export interface JastipRequest {
 
 export interface CreateJastipRequestPayload {
   category_id?: number | null;
+  title: string;
+  description?: string | null;
   from_loc: string;
   to_loc: string;
   notes?: string | null;
