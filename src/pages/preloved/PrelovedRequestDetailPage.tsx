@@ -28,11 +28,11 @@ export default function PrelovedRequestDetailPage() {
   const { data: categories } = useCategories();
   const deleteMutation = useDeletePrelovedRequest();
 
-  const getCategoryName = () => {
-    if (item?.category) return item.category.name;
+  const getCategoryTag = () => {
+    if (item?.category) return `${item.category.icon || ''} ${item.category.name}`.trim();
     if (item?.category_id && categories) {
       const cat = categories.find(c => c.id === item.category_id);
-      if (cat) return cat.name;
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
     }
     return "Umum";
   };
@@ -133,7 +133,7 @@ export default function PrelovedRequestDetailPage() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kategori</h3>
-                  <p className="text-charcoal font-semibold text-lg">{getCategoryName()}</p>
+                  <p className="text-charcoal font-semibold text-lg">{getCategoryTag()}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Dibuat Pada</h3>

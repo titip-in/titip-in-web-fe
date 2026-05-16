@@ -17,6 +17,7 @@ interface JastipCardProps {
     from: string;
     to: string;
   };
+  title?: string;
   tags: string[];
   deadline?: string;
   notes?: string;
@@ -34,7 +35,7 @@ interface JastipCardProps {
 }
 
 export function JastipCard({ 
-  user, timeAgo, status, route, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onEdit, onDelete, isOwner, hideImage 
+  user, timeAgo, status, route, title, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onEdit, onDelete, isOwner, hideImage 
 }: JastipCardProps) {
   const isAvailable = status === "ACTIVE" || status === "Aktif" || status === "OPEN";
 
@@ -92,6 +93,10 @@ export function JastipCard({
             )}
           </div>
         </div>
+
+        {title && (
+          <h3 className="font-display text-[18px] font-medium text-charcoal mb-1.5 line-clamp-1">{title}</h3>
+        )}
 
         <div className="jcard-route flex items-center gap-2 mb-3">
           <span className="jcard-place text-[16px] font-bold text-charcoal">{route.from}</span>

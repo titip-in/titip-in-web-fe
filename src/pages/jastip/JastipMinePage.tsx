@@ -47,6 +47,7 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
       }}
       timeAgo={new Date(fullData.created_at || '').toLocaleDateString('id-ID')}
       status={fullData.status}
+      title={fullData.title}
       route={{ from: fullData.from_loc, to: fullData.to_loc }}
       tags={[getCategoryTag()]}
       deadline={fullData.deadline ? new Date(fullData.deadline).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : undefined}

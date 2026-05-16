@@ -12,6 +12,8 @@ export default function JastipCreatePage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
 
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [fromLoc, setFromLoc] = useState("");
   const [toLoc, setToLoc] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -27,12 +29,15 @@ export default function JastipCreatePage() {
 
   useEffect(() => {
     if (isEdit && listingDetail) {
+      setTitle(listingDetail.title || "");
+      setDescription(listingDetail.description || "");
       setFromLoc(listingDetail.from_loc);
       setToLoc(listingDetail.to_loc);
       // Format datetime-local requires YYYY-MM-DDThh:mm
       if (listingDetail.deadline) {
         const d = new Date(listingDetail.deadline);
-        setDeadline(d.toISOString().slice(0, 16));
+        const localDateString = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        setDeadline(localDateString);
       }
       setCategoryId(listingDetail.category_id || null);
       if (listingDetail.images) {
@@ -47,6 +52,8 @@ export default function JastipCreatePage() {
     try {
       const payload = {
         category_id: categoryId,
+        title,
+        description: description || null,
         from_loc: fromLoc,
         to_loc: toLoc,
         deadline: new Date(deadline).toISOString(),
@@ -108,26 +115,49 @@ export default function JastipCreatePage() {
             )}
           </div>
           <div>
-            <Label htmlFor="from_loc" className="text-sm font-medium text-charcoal-60">Berangkat Dari</Label>
+            <Label htmlFor="title" className="text-sm font-medium text-charcoal-60">Judul Jastip</Label>
             <Input
-              id="from_loc"
+              id="title"
               required
-              value={fromLoc}
-              onChange={(e) => setFromLoc(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="mt-1"
-              placeholder="Contoh: Suhat"
+              placeholder="Contoh: Titip Makanan Suhat ke UB"
             />
           </div>
           <div>
-            <Label htmlFor="to_loc" className="text-sm font-medium text-charcoal-60">Tujuan Ke</Label>
-            <Input
-              id="to_loc"
-              required
-              value={toLoc}
-              onChange={(e) => setToLoc(e.target.value)}
-              className="mt-1"
-              placeholder="Contoh: Kampus UB"
+            <Label htmlFor="description" className="text-sm font-medium text-charcoal-60">Deskripsi (Opsional)</Label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 flex min-h-[80px] w-full rounded-md border border-subtle bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-charcoal-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Tuliskan detail barang yang bisa dititip..."
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="from_loc" className="text-sm font-medium text-charcoal-60">Berangkat Dari</Label>
+              <Input
+                id="from_loc"
+                required
+                value={fromLoc}
+                onChange={(e) => setFromLoc(e.target.value)}
+                className="mt-1"
+                placeholder="Contoh: Suhat"
+              />
+            </div>
+            <div>
+              <Label htmlFor="to_loc" className="text-sm font-medium text-charcoal-60">Tujuan Ke</Label>
+              <Input
+                id="to_loc"
+                required
+                value={toLoc}
+                onChange={(e) => setToLoc(e.target.value)}
+                className="mt-1"
+                placeholder="Contoh: Kampus UB"
+              />
+            </div>
           </div>
           <div>
             <Label htmlFor="deadline" className="text-sm font-medium text-charcoal-60">Batas Waktu Titipan / Berangkat</Label>

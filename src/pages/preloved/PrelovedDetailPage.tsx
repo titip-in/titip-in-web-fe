@@ -30,11 +30,11 @@ export default function PrelovedDetailPage() {
   const { data: categories } = useCategories();
   const deleteMutation = useDeletePrelovedListing();
 
-  const getCategoryName = () => {
-    if (item?.category) return item.category.name;
+  const getCategoryTag = () => {
+    if (item?.category) return `${item.category.icon || ''} ${item.category.name}`.trim();
     if (item?.category_id && categories) {
       const cat = categories.find(c => c.id === item.category_id);
-      if (cat) return cat.name;
+      if (cat) return `${cat.icon || ''} ${cat.name}`.trim();
     }
     return "Umum";
   };
@@ -134,7 +134,7 @@ export default function PrelovedDetailPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-charcoal-40 uppercase tracking-wider mb-2">Kategori</h3>
-                  <p className="text-charcoal font-medium">{getCategoryName()}</p>
+                  <p className="text-charcoal font-medium">{getCategoryTag()}</p>
                 </div>
               </div>
   

@@ -37,6 +37,7 @@ export default function JastipRequestsPage() {
               user={{ name: request.user?.name || "User", avatarClass: "bg-gradient-to-br from-gold to-gold-dark", avatarInitial: (request.user?.name || "U").charAt(0).toUpperCase(), wa_number: request.user?.wa_number }}
               timeAgo={new Date(request.created_at || '').toLocaleDateString('id-ID')}
               status={request.status}
+              title={request.title}
               route={{ from: request.from_loc, to: request.to_loc }}
               tags={[request.category ? `${request.category.icon || ''} ${request.category.name}`.trim() : "Umum"]}
               notes={request.notes || undefined}
