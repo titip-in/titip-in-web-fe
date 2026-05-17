@@ -8,6 +8,7 @@ import HomePage from '@/pages/home/HomePage'
 import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
 import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 import GoogleCallbackPage from '@/pages/auth/GoogleCallbackPage'
+import EmailVerificationPage from '@/pages/auth/EmailVerificationPage'
 
 // Jastip Pages
 import JastipListingsPage from '@/pages/jastip/JastipListingsPage'
@@ -53,8 +54,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Guard untuk route auth (redirect kalau sudah login)
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  if (isAuthenticated) return <Navigate to="/" replace />
+  const { isAuthenticated, user } = useAuthStore()
+  if (isAuthenticated) {
+    if (user && (!user.status || !user.avatar_url)) {
+      return <Navigate to="/setup-profile" replace />
+    }
+    return <Navigate to="/" replace />
+  }
   return <>{children}</>
 }
 
@@ -79,6 +85,7 @@ export default function App() {
         <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
         <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
         <Route path="/auth/callback" element={<GuestRoute><GoogleCallbackPage /></GuestRoute>} />
+        <Route path="/email-verification" element={<EmailVerificationPage />} />
 
         {/* Protected routes — dashboard home */}
         <Route path="/" element={<ProtectedRoute><MainLayout><HomePage /></MainLayout></ProtectedRoute>} />

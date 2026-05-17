@@ -10,7 +10,6 @@ import React, { useState } from "react";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 import { formatTimeAgoShort } from "@/lib/dateUtils";
-import { SetupProfileDialog } from "@/components/profile/SetupProfileDialog";
 import { useActivity } from "@/hooks/useActivity";
 import {
   AlertDialog,
@@ -47,26 +46,6 @@ export default function HomePage() {
 
   const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   const [limitDialogData, setLimitDialogData] = useState({ count: 0, type: "" });
-  
-  const [isSetupOpen, setIsSetupOpen] = useState(false);
-
-  React.useEffect(() => {
-    if (user && !user.status && !user.avatar_url) {
-      const dismissed = localStorage.getItem(`setup_dismissed_${user.id}`);
-      if (!dismissed) {
-        // Delay a bit for smooth entrance
-        const timer = setTimeout(() => setIsSetupOpen(true), 1500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [user]);
-
-  const handleDismissSetup = () => {
-    setIsSetupOpen(false);
-    if (user) {
-      localStorage.setItem(`setup_dismissed_${user.id}`, "true");
-    }
-  };
 
   const handleCreateClick = (type: "jastip-listing" | "jastip-request" | "preloved-listing", path: string) => {
     let isLimited = false;
@@ -436,11 +415,6 @@ export default function HomePage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <SetupProfileDialog 
-        isOpen={isSetupOpen} 
-        onClose={handleDismissSetup} 
-      />
     </div>
   );
 }
