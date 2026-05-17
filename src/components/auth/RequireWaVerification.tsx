@@ -10,8 +10,8 @@ export function RequireWaVerification({ children }: { children: React.ReactNode 
     if (user && !user.wa_verified_at) {
       // Trigger dialog
       setAuthError('WA_UNVERIFIED');
-      // Redirect user back so they don't see the form
-      navigate(-1); 
+      // Redirect user back to dashboard so they don't see the form
+      navigate('/', { replace: true }); 
     }
   }, [user, setAuthError, navigate]);
 
