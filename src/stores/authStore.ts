@@ -7,7 +7,9 @@ interface AuthState {
   user: User | null
   token: string | null
   isAuthenticated: boolean
+  authError: 'PROFILE_INCOMPLETE' | 'EMAIL_UNVERIFIED' | 'WA_UNVERIFIED' | null
   setAuth: (user: User, token: string) => void
+  setAuthError: (error: 'PROFILE_INCOMPLETE' | 'EMAIL_UNVERIFIED' | 'WA_UNVERIFIED' | null) => void
   logout: () => void
 }
 
@@ -17,10 +19,15 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      authError: null,
 
       setAuth: (user, token) => {
         localStorage.setItem('auth_token', token)
         set({ user, token, isAuthenticated: true })
+      },
+
+      setAuthError: (error) => {
+        set({ authError: error })
       },
 
       logout: () => {

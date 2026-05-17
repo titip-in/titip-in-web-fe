@@ -5,6 +5,9 @@ import LandingPage from '@/pages/landing/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import HomePage from '@/pages/home/HomePage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
+import GoogleCallbackPage from '@/pages/auth/GoogleCallbackPage'
 
 // Jastip Pages
 import JastipListingsPage from '@/pages/jastip/JastipListingsPage'
@@ -29,6 +32,7 @@ import SearchPage from '@/pages/search/SearchPage'
 
 // Profile Page
 import ProfilePage from '@/pages/profile/ProfilePage'
+import SetupProfilePage from '@/pages/profile/SetupProfilePage'
 
 // About Page
 import AboutPage from '@/pages/about/AboutPage'
@@ -38,6 +42,7 @@ import AndroidPage from '@/pages/android/AndroidPage'
 
 import { MainLayout } from '@/components/layout/MainLayout'
 import { ScrollToTop } from '@/components/ScrollToTop'
+import { GlobalAuthErrorListener } from '@/components/auth/GlobalAuthErrorListener'
 
 // Guard untuk route yang butuh login
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -57,6 +62,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <GlobalAuthErrorListener />
       <Routes>
         {/* Landing page — public, first impression */}
         <Route path="/landing" element={<GuestRoute><LandingPage /></GuestRoute>} />
@@ -70,6 +76,9 @@ export default function App() {
         {/* Auth routes */}
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
+        <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
+        <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+        <Route path="/auth/callback" element={<GuestRoute><GoogleCallbackPage /></GuestRoute>} />
 
         {/* Protected routes — dashboard home */}
         <Route path="/" element={<ProtectedRoute><MainLayout><HomePage /></MainLayout></ProtectedRoute>} />
@@ -103,6 +112,7 @@ export default function App() {
 
         {/* Profile Routes */}
         <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/setup-profile" element={<ProtectedRoute><MainLayout><SetupProfilePage /></MainLayout></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

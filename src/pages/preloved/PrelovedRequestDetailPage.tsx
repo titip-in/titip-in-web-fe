@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Check, RotateCcw, Trash2 } from "lucide-react";
+import { Check, RotateCcw, Trash2, ShieldCheck } from "lucide-react";
 import { usePrelovedRequestDetail, useDeletePrelovedRequest } from "@/hooks/usePreloved";
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
@@ -201,7 +201,14 @@ export default function PrelovedRequestDetailPage() {
                 )}
               </div>
               <div>
-                <div className="text-base font-bold text-charcoal">{item.user?.name || "User"}</div>
+                <div className="text-base font-bold text-charcoal flex items-center gap-1.5">
+                  {item.user?.name || "User"}
+                  {item.user?.wa_verified_at && (
+                    <span className="flex items-center text-sage text-[10px] font-bold px-1.5 py-0.5 rounded bg-sage-pale leading-none" title="Nomor WhatsApp Terverifikasi">
+                      <ShieldCheck size={10} className="mr-0.5" /> WA Verified
+                    </span>
+                  )}
+                </div>
                 <div className="text-[12px] text-charcoal-60 font-medium px-2 py-0.5 bg-charcoal-10 rounded-md inline-block mt-1">
                   {item.user?.status || "Member Titip.in"}
                 </div>

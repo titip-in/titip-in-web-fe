@@ -7,8 +7,17 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Package, ShoppingBag, LogOut, Mail, Info } from "lucide-react";
+import { Package, ShoppingBag, LogOut, Mail, Info, ShieldCheck, AlertCircle, Phone, Lock, KeyRound } from "lucide-react";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import api from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
@@ -39,6 +48,20 @@ export default function ProfilePage() {
   const [status, setStatus] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+  // OTP State
+  const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [requestOtpLoading, setRequestOtpLoading] = useState(false);
+  const [emailResendLoading, setEmailResendLoading] = useState(false);
+  
+  // Password State
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
@@ -51,6 +74,8 @@ export default function ProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const isWaChanged = waNumber !== profile?.wa_number;
+      
       const updatedUser = await updateMutation.mutateAsync({
         name,
         wa_number: waNumber,
@@ -61,9 +86,91 @@ export default function ProfilePage() {
       if (token) {
         setAuthUser(updatedUser, token);
       }
-      toast.success("Profil berhasil diperbarui!");
+      
+      if (isWaChanged) {
+        toast.success("Profil diperbarui. Silakan verifikasi nomor WhatsApp baru Anda.");
+        handleRequestOtp();
+      } else {
+        toast.success("Profil berhasil diperbarui!");
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
+    }
+  };
+
+  const handleRequestOtp = async () => {
+    setRequestOtpLoading(true);
+    try {
+      const res = await api.post("/v1/me/whatsapp/request-otp");
+      if (res.data.success) {
+        toast.success(`OTP telah dikirim ke WhatsApp ${waNumber}`);
+        setIsOtpDialogOpen(true);
+      }
+    } catch (error: any) {
+      console.error("Request OTP failed:", error);
+      toast.error(error.response?.data?.message || "Gagal mengirim OTP.");
+    } finally {
+      setRequestOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      toast.error("Silakan masukkan OTP.");
+      return;
+    }
+    setOtpLoading(true);
+    try {
+      const res = await api.post("/v1/me/whatsapp/verify-otp", { otp });
+      if (res.data.success) {
+        toast.success("Nomor WhatsApp berhasil diverifikasi!");
+        setIsOtpDialogOpen(false);
+        const userRes = await api.get("/v1/me");
+        if (userRes.data.success && token) {
+          setAuthUser(userRes.data.data, token);
+        }
+      }
+    } catch (error: any) {
+      console.error("Verify OTP failed:", error);
+      toast.error(error.response?.data?.message || "OTP tidak valid atau kadaluarsa.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    setEmailResendLoading(true);
+    try {
+      await api.post("/v1/email/resend");
+      toast.success("Email verifikasi telah dikirim ulang. Silakan cek kotak masuk Anda.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengirim ulang email verifikasi.");
+    } finally {
+      setEmailResendLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Password baru dan konfirmasi tidak cocok!");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      await api.put("/v1/me/password", {
+        current_password: oldPassword,
+        password: newPassword,
+        password_confirmation: confirmNewPassword
+      });
+      toast.success("Password berhasil diubah!");
+      setIsPasswordDialogOpen(false);
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengubah password.");
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -106,13 +213,36 @@ export default function ProfilePage() {
 
         <div className="space-y-4">
           <div>
-            <Label className="text-sm font-medium text-charcoal-60">Email</Label>
+            <Label className="text-sm font-medium text-charcoal-60 flex items-center justify-between">
+              <span>Email</span>
+              {profile?.email_verified_at ? (
+                <span className="flex items-center text-sage text-xs font-semibold px-2 py-0.5 rounded bg-sage-pale">
+                  <ShieldCheck size={12} className="mr-1" /> Terverifikasi
+                </span>
+              ) : (
+                <span className="flex items-center text-terracotta text-xs font-semibold px-2 py-0.5 rounded bg-terracotta-pale">
+                  <AlertCircle size={12} className="mr-1" /> Belum Terverifikasi
+                </span>
+              )}
+            </Label>
             <Input
               value={profile?.email || ""}
               disabled
               className="mt-1 bg-charcoal-10/50 cursor-not-allowed"
             />
-            <p className="text-xs text-charcoal-30 mt-1">Email tidak dapat diubah</p>
+            {!profile?.email_verified_at ? (
+              <Button 
+                type="button" 
+                variant="link" 
+                onClick={handleResendEmail} 
+                disabled={emailResendLoading}
+                className="p-0 h-auto text-xs text-sage-dark hover:text-sage mt-1.5"
+              >
+                {emailResendLoading ? "Mengirim..." : "Kirim Ulang Email Verifikasi"}
+              </Button>
+            ) : (
+              <p className="text-xs text-charcoal-30 mt-1">Email tidak dapat diubah</p>
+            )}
           </div>
           <div>
             <Label htmlFor="name" className="text-sm font-medium text-charcoal-60">Nama Lengkap</Label>
@@ -136,20 +266,44 @@ export default function ProfilePage() {
             <p className="text-xs text-charcoal-30 mt-1">Status ini akan ditampilkan di halaman detail Jastip dan Preloved Anda.</p>
           </div>
           <div>
-            <Label htmlFor="wa_number" className="text-sm font-medium text-charcoal-60">Nomor WhatsApp</Label>
-            <Input
-              id="wa_number"
-              required
-              value={waNumber}
-              onChange={(e) => setWaNumber(e.target.value)}
-              className="mt-1"
-              placeholder="Contoh: 6281234567890"
-            />
-            <p className="text-xs text-charcoal-30 mt-1">Gunakan kode negara (contoh: 62 untuk Indonesia)</p>
+            <Label htmlFor="wa_number" className="text-sm font-medium text-charcoal-60 flex items-center justify-between">
+              <span>Nomor WhatsApp</span>
+              {/* Note: since API doesn't expose wa_verified_at explicitly yet, we'll just show the request OTP button if they want to verify */}
+            </Label>
+            <div className="flex gap-2 mt-1">
+              <Input
+                id="wa_number"
+                required
+                value={waNumber}
+                onChange={(e) => setWaNumber(e.target.value)}
+                className="flex-1"
+                placeholder="Contoh: 6281234567890"
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleRequestOtp}
+                disabled={requestOtpLoading || waNumber !== profile?.wa_number}
+                className="border-sage text-sage-dark hover:bg-sage hover:text-white"
+                title={waNumber !== profile?.wa_number ? "Simpan profil terlebih dahulu untuk memverifikasi nomor baru" : "Verifikasi Nomor WA"}
+              >
+                {requestOtpLoading ? "Memproses..." : "Verifikasi"}
+              </Button>
+            </div>
+            <p className="text-xs text-charcoal-30 mt-1">Ganti nomor WA harus diikuti dengan verifikasi OTP kembali.</p>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-subtle flex justify-end">
+        <div className="pt-6 border-t border-subtle flex flex-col-reverse sm:flex-row justify-between gap-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => setIsPasswordDialogOpen(true)}
+            className="rounded-full border-charcoal-20 text-charcoal hover:bg-charcoal-10"
+          >
+            <KeyRound size={16} className="mr-2" />
+            Ganti Password
+          </Button>
           <Button 
             type="submit" 
             className="rounded-full bg-charcoal hover:bg-charcoal-80 text-white w-full sm:w-auto px-8"
@@ -299,6 +453,98 @@ export default function ProfilePage() {
           <span>Keluar dari Akun</span>
         </Button>
       </div>
+
+      {/* OTP Verification Dialog */}
+      <Dialog open={isOtpDialogOpen} onOpenChange={setIsOtpDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center font-display text-2xl">Verifikasi WhatsApp</DialogTitle>
+            <DialogDescription className="text-center">
+              Kami telah mengirimkan 6 digit kode OTP via WhatsApp ke nomor <strong className="text-charcoal">{waNumber}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 py-4">
+            <div className="w-16 h-16 bg-sage-pale text-sage-dark rounded-full flex items-center justify-center">
+              <Phone size={32} />
+            </div>
+            <Input
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              className="text-center text-2xl tracking-widest h-14 w-48 rounded-xl font-medium focus:ring-2 focus:ring-sage"
+              placeholder="000000"
+              maxLength={6}
+            />
+          </div>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button
+              onClick={handleVerifyOtp}
+              disabled={otpLoading || otp.length < 6}
+              className="w-full h-11 rounded-xl bg-sage-dark text-white hover:bg-sage-80"
+            >
+              {otpLoading ? "Memverifikasi..." : "Verifikasi OTP"}
+            </Button>
+            <div className="text-center text-xs text-charcoal-60 mt-2">
+              Tidak menerima kode? <button onClick={handleRequestOtp} disabled={requestOtpLoading} className="text-sage-dark font-medium hover:underline">Kirim Ulang</button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">Ganti Password</DialogTitle>
+            <DialogDescription>
+              Perbarui kata sandi Anda secara berkala untuk menjaga keamanan akun.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="old-password">Password Lama</Label>
+              <Input
+                id="old-password"
+                type="password"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <Label htmlFor="new-password">Password Baru</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-new-password">Konfirmasi Password Baru</Label>
+              <Input
+                id="confirm-new-password"
+                type="password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                className="mt-1"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={handleChangePassword}
+              disabled={passwordLoading || !oldPassword || !newPassword || !confirmNewPassword}
+              className="w-full sm:w-auto h-11 rounded-xl bg-charcoal text-white hover:bg-charcoal-80"
+            >
+              {passwordLoading ? "Menyimpan..." : "Simpan Password Baru"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
