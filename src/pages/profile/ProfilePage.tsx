@@ -158,9 +158,9 @@ export default function ProfilePage() {
     setPasswordLoading(true);
     try {
       await api.put("/v1/me/password", {
-        current_password: oldPassword,
-        password: newPassword,
-        password_confirmation: confirmNewPassword
+        old_password: oldPassword,
+        new_password: newPassword,
+        new_password_confirmation: confirmNewPassword
       });
       toast.success("Password berhasil diubah!");
       setIsPasswordDialogOpen(false);

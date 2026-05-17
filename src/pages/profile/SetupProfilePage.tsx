@@ -151,16 +151,8 @@ export default function SetupProfilePage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-display text-2xl text-charcoal font-medium">Lengkapi Profil Anda</h1>
-            <p className="text-sm text-charcoal-60 mt-1">Bantu pengguna lain mengenali Anda.</p>
+            <p className="text-sm text-charcoal-60 mt-1">Lengkapi data diri dan verifikasi nomor WhatsApp untuk melanjutkan.</p>
           </div>
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/", { replace: true })}
-            className="text-charcoal-60 hover:text-charcoal"
-          >
-            Lewati
-            <ArrowRight size={16} className="ml-2" />
-          </Button>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
@@ -231,12 +223,16 @@ export default function SetupProfilePage() {
                 />
                 <Button 
                   type="button" 
-                  variant="outline" 
+                  variant={user?.wa_verified_at ? "default" : "outline"}
                   onClick={handleRequestOtp}
-                  disabled={requestOtpLoading || !waNumber}
-                  className="h-11 rounded-xl border-sage text-sage-dark hover:bg-sage hover:text-white transition-colors"
+                  disabled={requestOtpLoading || !waNumber || !!user?.wa_verified_at}
+                  className={`h-11 rounded-xl transition-colors ${
+                    user?.wa_verified_at 
+                      ? "bg-sage text-white" 
+                      : "border-sage text-sage-dark hover:bg-sage hover:text-white"
+                  }`}
                 >
-                  {requestOtpLoading ? "Loading..." : "Verifikasi WA"}
+                  {requestOtpLoading ? "Loading..." : (user?.wa_verified_at ? "Terverifikasi" : "Verifikasi WA")}
                 </Button>
               </div>
             </div>
@@ -256,12 +252,12 @@ export default function SetupProfilePage() {
         <div className="mt-10 flex justify-end">
           <Button 
             onClick={handleSaveProfile}
-            disabled={loading}
-            className="h-12 px-8 rounded-xl bg-charcoal text-cream hover:bg-charcoal-80 font-medium"
+            disabled={loading || !name || !status || !avatarUrl || !user?.wa_verified_at}
+            className="h-12 px-8 rounded-xl bg-charcoal text-cream hover:bg-charcoal-80 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? "Menyimpan..." : (
               <>
-                Simpan & Lanjutkan
+                {(!name || !status || !avatarUrl) ? "Lengkapi Semua Data" : (!user?.wa_verified_at ? "Verifikasi WA Dahulu" : "Simpan & Lanjutkan")}
                 <Save size={18} className="ml-2" />
               </>
             )}
