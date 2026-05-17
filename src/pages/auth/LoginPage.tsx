@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,18 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleEdgeCase, setGoogleEdgeCase] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const errorHandled = useRef(false);
+
+  useEffect(() => {
+    if (!errorHandled.current) {
+      const errorParam = searchParams.get("error");
+      if (errorParam === "google_auth_failed") {
+        toast.error("Autentikasi Google gagal atau dibatalkan. Silakan coba lagi.");
+        errorHandled.current = true;
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

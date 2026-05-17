@@ -26,6 +26,7 @@ export function GlobalAuthErrorListener() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [requestOtpLoading, setRequestOtpLoading] = useState(false);
   const [emailResendLoading, setEmailResendLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
 
   useEffect(() => {
     if (authError === "PROFILE_INCOMPLETE") {
@@ -39,6 +40,13 @@ export function GlobalAuthErrorListener() {
       setAuthError(null);
     }
   }, [authError, navigate, setAuthError]);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
 
   const handleResendEmail = async () => {
     setEmailResendLoading(true);
@@ -59,6 +67,7 @@ export function GlobalAuthErrorListener() {
       const res = await api.post("/v1/me/whatsapp/request-otp");
       if (res.data.success) {
         toast.success(`OTP telah dikirim ke WhatsApp Anda`);
+        setResendTimer(60);
       }
     } catch (error: any) {
       console.error("Request OTP failed:", error);
@@ -159,7 +168,7 @@ export function GlobalAuthErrorListener() {
               {otpLoading ? "Memverifikasi..." : "Verifikasi OTP"}
             </Button>
             <div className="text-center text-xs text-charcoal-60 mt-2 flex flex-col gap-2">
-              <span>Tidak menerima kode? <button onClick={handleRequestOtp} disabled={requestOtpLoading} className="text-sage-dark font-medium hover:underline">Kirim Ulang</button></span>
+              <span>Tidak menerima kode? <button onClick={handleRequestOtp} disabled={requestOtpLoading || resendTimer > 0} className={`font-medium ${resendTimer > 0 ? 'text-charcoal-30 cursor-not-allowed' : 'text-sage-dark hover:underline'}`}>{resendTimer > 0 ? `Kirim Ulang (${resendTimer}s)` : 'Kirim Ulang'}</button></span>
               <button onClick={() => {
                 setIsWaDialogOpen(false);
                 navigate("/profile");
