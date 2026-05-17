@@ -26,6 +26,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isVerifyDialogOpen, setIsVerifyDialogOpen] = useState(false);
+  const [tempAuth, setTempAuth] = useState<{ user: User; access_token: string } | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +45,7 @@ export default function RegisterPage() {
       });
 
       const { user, access_token } = response.data.data;
-      useAuthStore.getState().setAuth(user, access_token);
+      setTempAuth({ user, access_token });
       setIsVerifyDialogOpen(true);
     } catch (error: any) {
       console.error("Register failed:", error);
@@ -342,8 +343,11 @@ export default function RegisterPage() {
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => {
               setIsVerifyDialogOpen(false);
+              if (tempAuth) {
+                useAuthStore.getState().setAuth(tempAuth.user, tempAuth.access_token);
+              }
               navigate('/setup-profile');
-            }} className="bg-sage text-cream hover:bg-sage-dark rounded-full">
+            }} className="bg-sage hover:bg-sage-dark text-white rounded-full">
               Lanjutkan ke Setup Profil
             </AlertDialogAction>
           </AlertDialogFooter>
