@@ -61,6 +61,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -171,6 +172,20 @@ export default function ProfilePage() {
       toast.error(error.response?.data?.message || "Gagal mengubah password.");
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const handleForgotPasswordForGoogleUser = async () => {
+    if (!profile?.email) return;
+    setForgotPasswordLoading(true);
+    try {
+      await api.post("/v1/forgot-password", { email: profile.email });
+      toast.success("Link reset password telah dikirim ke email Anda.");
+      setIsPasswordDialogOpen(false);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengirim link reset password.");
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -500,6 +515,16 @@ export default function ProfilePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <div className="bg-sage-pale/50 p-3.5 rounded-xl border border-sage/30 text-[13px] text-sage-dark mb-2">
+              <p className="mb-1.5">Login via Google atau lupa password saat ini?</p>
+              <button 
+                onClick={handleForgotPasswordForGoogleUser}
+                disabled={forgotPasswordLoading}
+                className="font-medium underline hover:opacity-80 transition-opacity"
+              >
+                {forgotPasswordLoading ? "Mengirim link..." : "Kirim link buat/reset password ke Email"}
+              </button>
+            </div>
             <div>
               <Label htmlFor="old-password">Password Lama</Label>
               <Input
