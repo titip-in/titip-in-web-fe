@@ -171,7 +171,7 @@ export default function JastipCreatePage() {
             />
           </div>
           <div>
-            <Label className="text-sm font-medium text-charcoal-60 mb-4 block">Foto Tiket / Bukti Perjalanan (Opsional)</Label>
+            <Label className="text-sm font-medium text-charcoal-60 mb-4 block">Foto Contoh Barang yang Bisa Dititip (Opsional)</Label>
             <MultiImageUpload 
               value={imageUrls} 
               onChange={setImageUrls} 
