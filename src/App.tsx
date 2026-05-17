@@ -120,7 +120,7 @@ export default function App() {
 
         {/* Profile Routes */}
         <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
-        <Route path="/setup-profile" element={<ProtectedRoute><MainLayout><SetupProfilePage /></MainLayout></ProtectedRoute>} />
+        <Route path="/setup-profile" element={<ProtectedRoute><SetupProfilePage /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

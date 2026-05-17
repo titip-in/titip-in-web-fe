@@ -145,8 +145,9 @@ export default function SetupProfilePage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <div className="bg-white rounded-3xl p-8 border border-subtle shadow-sm animate-fade-up">
+    <div className="min-h-screen bg-cream flex flex-col items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-2xl">
+        <div className="bg-white rounded-3xl p-8 border border-subtle shadow-sm animate-fade-up">
         
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -300,6 +301,7 @@ export default function SetupProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
