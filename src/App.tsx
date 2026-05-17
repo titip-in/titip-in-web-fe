@@ -33,7 +33,11 @@ import ProfilePage from '@/pages/profile/ProfilePage'
 // About Page
 import AboutPage from '@/pages/about/AboutPage'
 
+// Android Page
+import AndroidPage from '@/pages/android/AndroidPage'
+
 import { MainLayout } from '@/components/layout/MainLayout'
+import { ScrollToTop } from '@/components/ScrollToTop'
 
 // Guard untuk route yang butuh login
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -52,12 +56,16 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
+      <ScrollToTop />
       <Routes>
         {/* Landing page — public, first impression */}
         <Route path="/landing" element={<GuestRoute><LandingPage /></GuestRoute>} />
 
         {/* About page — public, no auth required */}
         <Route path="/about" element={<AboutPage />} />
+
+        {/* Android download page — public */}
+        <Route path="/android" element={<AndroidPage />} />
 
         {/* Auth routes */}
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
