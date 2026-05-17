@@ -139,7 +139,7 @@ export function GlobalAuthErrorListener() {
         setIsWaDialogOpen(open);
         if (open) handleRequestOtp(); // Auto request OTP when opened
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <div className="w-12 h-12 rounded-full bg-sage-pale text-sage-dark flex items-center justify-center mx-auto mb-4">
               <Phone size={24} />
