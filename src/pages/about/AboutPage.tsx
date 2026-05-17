@@ -2,6 +2,7 @@ import "./about.css";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { Mail, ArrowLeft, Users, Shield, Zap, Instagram } from "lucide-react";
+import { LandingFooter } from "@/components/LandingFooter";
 
 /* ─────────────────────────────────────────────
    Fade-in on scroll hook
@@ -330,47 +331,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="about-footer">
-        <div className="about-footer-inner">
-          <div className="about-footer-top">
-            <div>
-              <Link to="/landing" className="about-footer-brand">Titip.in</Link>
-              <p className="about-footer-tagline">
-                Platform hyperlocal jastip &amp; preloved untuk warga Malang.
-              </p>
-            </div>
-            <div className="about-footer-links">
-              <div className="about-footer-col">
-                <div className="about-footer-col-title">Platform</div>
-                <Link to="/landing">Beranda</Link>
-                <Link to="/login">Masuk</Link>
-                <Link to="/register">Daftar</Link>
-              </div>
-              <div className="about-footer-col">
-                <div className="about-footer-col-title">Perusahaan</div>
-                <Link to="/about">Tentang Kami</Link>
-                <a href="mailto:support@titipin.me">Hubungi Kami</a>
-              </div>
-              <div className="about-footer-col">
-                <div className="about-footer-col-title">Sosial Media</div>
-                <a href="https://instagram.com/titipin.me" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                  <Instagram size={14} />
-                  Instagram
-                </a>
-              </div>
-              <div className="about-footer-col">
-                <div className="about-footer-col-title">Tim</div>
-                <a href="mailto:okta@titipin.me">okta@titipin.me</a>
-                <a href="mailto:alberd@titipin.me">alberd@titipin.me</a>
-                <a href="mailto:fathan@titipin.me">fathan@titipin.me</a>
-              </div>
-            </div>
-          </div>
-          <div className="about-footer-bottom">
-            <p>© 2026 Titip.in — Buat & Cari Jastip-Preloved dengan Mudah.</p>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

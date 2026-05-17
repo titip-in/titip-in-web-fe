@@ -1,6 +1,7 @@
 import { Topbar } from "./Topbar";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
+import { AndroidDownloadCTA } from "./AndroidDownloadCTA";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         gridTemplateRows: "var(--topbar-h) 1fr",
       }}
     >
+      <AndroidDownloadCTA />
       <Topbar />
       <Sidebar />
       <main className="main-content overflow-y-auto overflow-x-hidden bg-cream p-8 px-12 pb-16">

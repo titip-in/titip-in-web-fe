@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useJastipRequests } from "@/hooks/useJastip";
 import { JastipCard } from "@/components/home/JastipCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, NavLink } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 import {
@@ -34,6 +34,22 @@ export default function JastipRequestsPage() {
         >
           📍 Buat Request
         </button>
+      </div>
+
+      {/* Tab Switcher */}
+      <div className="flex bg-charcoal/5 p-1 rounded-full mb-6 w-full max-w-[400px]">
+        <NavLink 
+          to="/jastip/listings" 
+          className={({ isActive }) => `flex-1 py-2.5 text-center text-[13px] font-semibold rounded-full transition-all ${isActive ? 'bg-white shadow-sm text-charcoal' : 'text-charcoal-60 hover:text-charcoal'}`}
+        >
+          Tersedia
+        </NavLink>
+        <NavLink 
+          to="/jastip/requests" 
+          className={({ isActive }) => `flex-1 py-2.5 text-center text-[13px] font-semibold rounded-full transition-all ${isActive ? 'bg-white shadow-sm text-charcoal' : 'text-charcoal-60 hover:text-charcoal'}`}
+        >
+          Nitip
+        </NavLink>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">

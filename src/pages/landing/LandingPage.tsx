@@ -19,6 +19,7 @@ import {
   Zap,
   Instagram,
 } from "lucide-react";
+import { LandingFooter } from "@/components/LandingFooter";
 
 /* ─────────────────────────────────────────────
    Animated counter hook
@@ -116,6 +117,9 @@ export default function LandingPage() {
           </div>
 
           <div className="nav-actions">
+            <Link to="/android" className="nav-btn-ghost" style={{ display: "flex", alignItems: "center", gap: "6px", border: "1.5px solid var(--charcoal-30)", borderRadius: "9999px" }}>
+              <span>📱</span> Android
+            </Link>
             <Link to="/login" className="nav-btn-ghost">Masuk</Link>
             <Link to="/register" className="nav-btn-cta">Daftar Gratis</Link>
           </div>
@@ -137,8 +141,9 @@ export default function LandingPage() {
             <a href="#showcase" className="nav-link" onClick={() => setMobileNav(false)}>Preview</a>
             <Link to="/about" className="nav-link" onClick={() => setMobileNav(false)}>Tentang Kami</Link>
             <div className="nav-mobile-actions">
-              <Link to="/login" className="nav-btn-ghost">Masuk</Link>
-              <Link to="/register" className="nav-btn-cta">Daftar Gratis</Link>
+              <Link to="/android" className="nav-btn-ghost" onClick={() => setMobileNav(false)} style={{ border: "1.5px solid var(--charcoal-30)", borderRadius: "9999px", display: "flex", alignItems: "center", gap: "6px" }}>📱 Android App</Link>
+              <Link to="/login" className="nav-btn-ghost" onClick={() => setMobileNav(false)}>Masuk</Link>
+              <Link to="/register" className="nav-btn-cta" onClick={() => setMobileNav(false)}>Daftar Gratis</Link>
             </div>
           </div>
         )}
@@ -366,9 +371,9 @@ export default function LandingPage() {
         <div className="section-inner">
           <div className="section-header">
             <span className="section-eyebrow">Lihat Langsung</span>
-            <h2 className="section-title">Platform yang Sudah Siap Pakai</h2>
+            <h2 className="section-title">Titip.in Sudah Hadir!</h2>
             <p className="section-desc">
-              Bukan sekadar mockup — ini produk nyata yang sudah bisa kamu gunakan hari ini.
+              Buat dan Cari Jastip-Preloved mu Sekarang!.
             </p>
           </div>
 
@@ -405,6 +410,153 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ ANDROID APP BANNER ═══ */}
+      <section style={{ padding: "0 32px 80px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{
+            background: "linear-gradient(135deg, var(--charcoal) 0%, #2d2d2a 100%)",
+            borderRadius: "24px",
+            padding: "48px 48px",
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            gap: "48px",
+            alignItems: "center",
+            position: "relative",
+            overflow: "hidden",
+          }}>
+            {/* Decorative blobs */}
+            <div style={{ position: "absolute", top: "-40px", right: "200px", width: "200px", height: "200px", background: "var(--terracotta)", borderRadius: "50%", opacity: 0.08, filter: "blur(40px)", pointerEvents: "none" }} />
+            <div style={{ position: "absolute", bottom: "-30px", right: "80px", width: "150px", height: "150px", background: "var(--sage)", borderRadius: "50%", opacity: 0.1, filter: "blur(30px)", pointerEvents: "none" }} />
+
+            {/* Text */}
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
+                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "9999px", padding: "6px 14px",
+                fontSize: "11px", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase",
+                color: "var(--terracotta)", marginBottom: "20px",
+              }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--terracotta)", display: "inline-block", animation: "pulse 2s infinite" }} />
+                Tersedia di Android
+              </div>
+
+              <h2 style={{
+                fontFamily: "var(--font-display)", fontSize: "clamp(24px, 3vw, 36px)",
+                fontStyle: "italic", fontWeight: 400, color: "var(--cream)",
+                marginBottom: "12px", lineHeight: 1.2,
+              }}>
+                Bawa Titip.in ke mana pun kamu pergi
+              </h2>
+              <p style={{ fontSize: "15px", color: "rgba(245,242,236,0.55)", lineHeight: 1.7, maxWidth: "480px", marginBottom: "28px" }}>
+                App Android native dengan desain premium — lebih cepat, lebih nyaman, dan langsung ada di home screen HP kamu. Download gratis sekarang.
+              </p>
+
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+                <Link
+                  to="/android"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "8px",
+                    background: "var(--terracotta)", color: "white",
+                    padding: "12px 28px", borderRadius: "9999px",
+                    fontSize: "14px", fontWeight: 600, textDecoration: "none",
+                    transition: "all 0.2s", boxShadow: "0 4px 20px rgba(193,100,72,0.35)",
+                  }}
+                >
+                  📱 Lihat & Download App
+                </Link>
+                <span style={{ fontSize: "13px", color: "rgba(245,242,236,0.35)" }}>
+                  Android 8.0+ · Gratis
+                </span>
+              </div>
+            </div>
+
+            {/* Phone previews */}
+            <div style={{ display: "flex", gap: "12px", position: "relative", zIndex: 1 }}>
+              {["/screenshots/app-home.jpg", "/screenshots/app-jastip.jpg"].map((src, i) => (
+                <div key={i} style={{
+                  width: "100px",
+                  background: "var(--charcoal)",
+                  borderRadius: "20px",
+                  padding: "5px",
+                  boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
+                  transform: i === 0 ? "rotate(-4deg) translateY(8px)" : "rotate(3deg) translateY(-8px)",
+                  flexShrink: 0,
+                }}>
+                  <div style={{ borderRadius: "15px", overflow: "hidden", aspectRatio: "9/19.5" }}>
+                    <img src={src} alt="App screenshot" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ ABOUT US BANNER ═══ */}
+      <section style={{ padding: "0 32px 80px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <div style={{
+            background: "var(--cream-dark)",
+            border: "1.5px solid var(--border-subtle)",
+            borderRadius: "24px",
+            padding: "48px 48px",
+            display: "grid",
+            gap: "48px",
+            alignItems: "center",
+          }} className="about-us-grid-responsive">
+            <div>
+              <span className="section-eyebrow" style={{ color: "var(--terracotta)", fontWeight: 600 }}>TENTANG KAMI</span>
+              <h2 style={{
+                fontFamily: "var(--font-display)", fontSize: "clamp(28px, 4vw, 40px)",
+                fontStyle: "italic", fontWeight: 400, color: "var(--charcoal)",
+                marginTop: "12px", marginBottom: "20px", lineHeight: 1.2,
+              }}>
+                Lahir dari Kosan,<br />Tumbuh bersama Mahasiswa Malang
+              </h2>
+              <p style={{ fontSize: "15px", color: "var(--charcoal-60)", lineHeight: 1.7, marginBottom: "28px" }}>
+                Titip.in berawal dari sebuah keresahan sederhana di kosan daerah Suhat. Kami lelah melihat informasi jastip dan preloved yang tenggelam di ribuan chat grup WhatsApp. Dari sana, kami membangun wadah sederhana yang kini menghubungkan ribuan mahasiswa Malang.
+              </p>
+              <Link
+                to="/about"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "8px",
+                  background: "var(--charcoal)", color: "var(--cream)",
+                  padding: "12px 28px", borderRadius: "9999px",
+                  fontSize: "14px", fontWeight: 600, textDecoration: "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                Baca Cerita Lengkap Kami →
+              </Link>
+            </div>
+
+            {/* Visual - Bento styled stats/team */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ background: "white", padding: "24px", borderRadius: "16px", border: "1px solid var(--border-subtle)" }}>
+                <div style={{ fontSize: "32px", marginBottom: "8px" }}>🎓</div>
+                <div style={{ fontWeight: 600, color: "var(--charcoal)", fontSize: "15px" }}>Untuk Mahasiswa</div>
+                <p style={{ fontSize: "12px", color: "var(--charcoal-60)", marginTop: "4px" }}>UB, UM, Polinema & kampus lainnya di Malang.</p>
+              </div>
+              <div style={{ background: "white", padding: "24px", borderRadius: "16px", border: "1px solid var(--border-subtle)" }}>
+                <div style={{ fontSize: "32px", marginBottom: "8px" }}>🤝</div>
+                <div style={{ fontWeight: 600, color: "var(--charcoal)", fontSize: "15px" }}>100% Komunitas</div>
+                <p style={{ fontSize: "12px", color: "var(--charcoal-60)", marginTop: "4px" }}>Bebas biaya platform, tanpa komisi apa pun.</p>
+              </div>
+              <div style={{ background: "white", padding: "24px", borderRadius: "16px", border: "1px solid var(--border-subtle)", gridColumn: "span 2" }}>
+                <div style={{ display: "flex", gap: "-8px", marginBottom: "12px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--sage)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, border: "2px solid white" }}>O</div>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--terracotta)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, border: "2px solid white", marginLeft: "-8px" }}>A</div>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "var(--gold)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, border: "2px solid white", marginLeft: "-8px" }}>F</div>
+                </div>
+                <div style={{ fontWeight: 600, color: "var(--charcoal)", fontSize: "15px" }}>Dibuat oleh Tim Berdedikasi</div>
+                <p style={{ fontSize: "12px", color: "var(--charcoal-60)", marginTop: "4px" }}>Dikembangkan secara independen untuk solusi lokal Malang.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -447,46 +599,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="landing-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="footer-logo">Titip.in</span>
-            <p className="footer-tagline">
-              Platform jastip & preloved hyperlocal untuk warga Malang.
-            </p>
-          </div>
-
-          <div className="footer-links">
-            <div className="footer-col">
-              <div className="footer-col-title">Platform</div>
-              <a href="#fitur">Fitur</a>
-              <a href="#cara-kerja">Cara Kerja</a>
-              <a href="#showcase">Preview</a>
-              <Link to="/about">Tentang Kami</Link>
-            </div>
-            <div className="footer-col">
-              <div className="footer-col-title">Akun</div>
-              <Link to="/login">Masuk</Link>
-              <Link to="/register">Daftar</Link>
-            </div>
-            <div className="footer-col">
-              <div className="footer-col-title">Hubungi Kami</div>
-              <a href="mailto:support@titipin.me" className="flex items-center gap-2 mb-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                support@titipin.me
-              </a>
-              <a href="https://instagram.com/titipin.me" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Instagram className="w-4 h-4" />
-                @titipin.me
-              </a>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            <p>© 2026 Titip.in — Buat & Cari Jastip-Preloved dengan Mudah</p>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

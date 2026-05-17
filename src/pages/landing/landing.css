@@ -408,3 +408,14 @@
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.about-us-grid-responsive {
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 768px) {
+  .about-us-grid-responsive {
+    grid-template-columns: 1fr !important;
+    padding: 32px 24px !important;
+    gap: 32px !important;
+  }
+}
