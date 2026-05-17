@@ -23,6 +23,16 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Auto logout on token expiration or invalid token
       useAuthStore.getState().logout();
+    } else if (error.response?.status === 403) {
+      const data = error.response.data;
+      const errorCode = data?.error_code || data?.message;
+      if (
+        errorCode === "PROFILE_INCOMPLETE" || 
+        errorCode === "EMAIL_UNVERIFIED" || 
+        errorCode === "WA_UNVERIFIED"
+      ) {
+        useAuthStore.getState().setAuthError(errorCode);
+      }
     }
     return Promise.reject(error);
   }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -8,21 +8,12 @@ import { User, ApiResponse } from "@/types/api";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { Mail, Lock, ArrowRight, Package, ShoppingBag, MessageCircle, Info } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isForgotDialogOpen, setIsForgotDialogOpen] = useState(false);
+  const [googleEdgeCase, setGoogleEdgeCase] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,9 +30,25 @@ export default function LoginPage() {
       navigate("/", { replace: true });
     } catch (error: any) {
       console.error("Login failed:", error);
-      toast.error(error.response?.data?.message || "Login gagal! Silakan periksa kredensial Anda.");
+      if (error.response?.status === 422) {
+        setGoogleEdgeCase(true);
+        toast.error("Akun Anda terdaftar via Google tanpa password. Silakan login dengan Google atau gunakan fitur Lupa Password.");
+      } else {
+        toast.error(error.response?.data?.message || "Login gagal! Silakan periksa kredensial Anda.");
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await api.get("/v1/auth/google");
+      if (res.data.success && res.data.data?.url) {
+        window.location.href = res.data.data.url;
+      }
+    } catch (error) {
+      toast.error("Gagal menghubungkan ke Google.");
     }
   };
 
@@ -175,33 +182,61 @@ export default function LoginPage() {
                   Ingat saya
                 </Label>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsForgotDialogOpen(true)}
+              <Link
+                to="/forgot-password"
                 className="text-sm font-medium hover:underline"
                 style={{ color: "var(--sage-dark)" }}
               >
                 Lupa password?
-              </button>
+              </Link>
+            </div>
+
+              <Button
+                type="submit"
+                className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+                style={{
+                  background: "var(--charcoal)",
+                  color: "var(--cream)",
+                }}
+                disabled={loading}
+              >
+                {loading ? "Sedang masuk..." : (
+                  <>
+                    Masuk
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <div className="relative mt-6 mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t" style={{ borderColor: "var(--charcoal-20)" }}></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2" style={{ background: "var(--cream)", color: "var(--charcoal-40)" }}>Atau</span>
+              </div>
             </div>
 
             <Button
-              type="submit"
-              className="w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+              type="button"
+              variant="outline"
+              onClick={handleGoogleLogin}
+              className={`w-full h-11 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 border-2 ${googleEdgeCase ? 'border-terracotta ring-2 ring-terracotta/20 animate-pulse' : 'border-charcoal-20'} hover:bg-charcoal-10 transition-all`}
               style={{
-                background: "var(--charcoal)",
-                color: "var(--cream)",
+                color: "var(--charcoal)",
               }}
-              disabled={loading}
             >
-              {loading ? "Sedang masuk..." : (
-                <>
-                  Masuk
-                  <ArrowRight size={16} />
-                </>
-              )}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.8 15.71 17.58V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4" />
+                <path d="M12 23C14.97 23 17.46 22.02 19.28 20.34L15.71 17.58C14.73 18.24 13.48 18.64 12 18.64C9.13 18.64 6.7 16.7 5.82 14.1H2.13V16.96C3.95 20.58 7.68 23 12 23Z" fill="#34A853" />
+                <path d="M5.82 14.1C5.59 13.43 5.46 12.73 5.46 12C5.46 11.27 5.59 10.57 5.82 9.9V7.04H2.13C1.38 8.53 0.96 10.22 0.96 12C0.96 13.78 1.38 15.47 2.13 16.96L5.82 14.1Z" fill="#FBBC05" />
+                <path d="M12 5.36C13.62 5.36 15.07 5.92 16.21 7.01L19.36 3.86C17.45 2.08 14.97 1 12 1C7.68 1 3.95 3.42 2.13 7.04L5.82 9.9C6.7 7.3 9.13 5.36 12 5.36Z" fill="#EA4335" />
+              </svg>
+              Lanjutkan dengan Google
             </Button>
-          </form>
+
+
 
           <div className="mt-8 text-center">
             <p className="text-sm" style={{ color: "var(--charcoal-60)" }}>
@@ -218,31 +253,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <AlertDialog open={isForgotDialogOpen} onOpenChange={setIsForgotDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="w-12 h-12 rounded-full bg-gold-pale text-gold-dark flex items-center justify-center mb-4">
-              <Info size={24} />
-            </div>
-            <AlertDialogTitle>Lupa Password?</AlertDialogTitle>
-            <AlertDialogDescription className="text-charcoal-60 space-y-3">
-              <p>Fitur reset password mandiri sedang dalam pengembangan.</p>
-              <p>Untuk saat ini, silakan hubungi tim support kami melalui email untuk melakukan reset password akun Anda:</p>
-              <div className="bg-cream-dark p-3 rounded-lg border border-subtle">
-                <a href="mailto:support@titipin.me" className="text-sage-dark font-bold hover:underline flex items-center gap-2">
-                  <Mail size={16} />
-                  support@titipin.me
-                </a>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setIsForgotDialogOpen(false)} className="bg-charcoal text-cream hover:bg-charcoal-80 rounded-full">
-              Oke, Mengerti
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
