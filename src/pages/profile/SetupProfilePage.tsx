@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, ArrowRight, Save, Phone, CheckCircle2, X } from "lucide-react";
+import { Camera, ArrowRight, Save, Phone, CheckCircle2, X, ShieldCheck } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 import api from "@/lib/api";
 import { toast } from "sonner";
@@ -35,6 +35,14 @@ export default function SetupProfilePage() {
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [requestOtpLoading, setRequestOtpLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendTimer]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -74,6 +82,11 @@ export default function SetupProfilePage() {
   };
 
   const handleSaveProfile = async () => {
+    if (!user?.wa_verified_at) {
+      toast.error("Silakan verifikasi nomor WhatsApp Anda terlebih dahulu.");
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await api.put("/v1/me", {
@@ -109,6 +122,7 @@ export default function SetupProfilePage() {
       const res = await api.post("/v1/me/whatsapp/request-otp");
       if (res.data.success) {
         toast.success(`OTP telah dikirim ke WhatsApp ${waNumber}`);
+        setResendTimer(60);
         setIsOtpDialogOpen(true);
       }
     } catch (error: any) {
@@ -149,10 +163,20 @@ export default function SetupProfilePage() {
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-3xl p-8 border border-subtle shadow-sm animate-fade-up">
         
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-display text-2xl text-charcoal font-medium">Lengkapi Profil Anda</h1>
             <p className="text-sm text-charcoal-60 mt-1">Lengkapi data diri dan verifikasi nomor WhatsApp untuk melanjutkan.</p>
+          </div>
+        </div>
+
+        <div className="mb-8 p-4 bg-sage/10 border border-sage/20 rounded-xl flex items-start gap-3">
+          <ShieldCheck className="text-sage-dark shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="text-sm font-medium text-sage-dark">Keamanan & Kepercayaan Transaksi</h3>
+            <p className="text-xs text-sage-dark/80 mt-1 leading-relaxed">
+              Titip.in mewajibkan verifikasi WhatsApp sebagai <strong>Trust Layer</strong> untuk memastikan setiap pengguna adalah orang asli. Hal ini menjamin keamanan, mencegah penipuan, dan melancarkan komunikasi saat transaksi jastip atau preloved berlangsung.
+            </p>
           </div>
         </div>
 
@@ -226,14 +250,14 @@ export default function SetupProfilePage() {
                   type="button" 
                   variant={user?.wa_verified_at ? "default" : "outline"}
                   onClick={handleRequestOtp}
-                  disabled={requestOtpLoading || !waNumber || !!user?.wa_verified_at}
+                  disabled={requestOtpLoading || !waNumber || !!user?.wa_verified_at || resendTimer > 0}
                   className={`h-11 rounded-xl transition-colors ${
                     user?.wa_verified_at 
                       ? "bg-sage text-white" 
                       : "border-sage text-sage-dark hover:bg-sage hover:text-white"
                   }`}
                 >
-                  {requestOtpLoading ? "Loading..." : (user?.wa_verified_at ? "Terverifikasi" : "Verifikasi WA")}
+                  {requestOtpLoading ? "Loading..." : (user?.wa_verified_at ? "Terverifikasi" : (resendTimer > 0 ? `Tunggu (${resendTimer}s)` : "Verifikasi WA"))}
                 </Button>
               </div>
             </div>
@@ -253,12 +277,12 @@ export default function SetupProfilePage() {
         <div className="mt-10 flex justify-end">
           <Button 
             onClick={handleSaveProfile}
-            disabled={loading || !name || !status || !avatarUrl || !user?.wa_verified_at}
-            className="h-12 px-8 rounded-xl bg-charcoal text-cream hover:bg-charcoal-80 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="h-12 px-8 rounded-xl bg-charcoal text-cream hover:bg-charcoal-80 font-medium"
           >
             {loading ? "Menyimpan..." : (
               <>
-                {(!name || !status || !avatarUrl) ? "Lengkapi Semua Data" : (!user?.wa_verified_at ? "Verifikasi WA Dahulu" : "Simpan & Lanjutkan")}
+                Simpan & Lanjutkan
                 <Save size={18} className="ml-2" />
               </>
             )}
@@ -296,7 +320,7 @@ export default function SetupProfilePage() {
               {otpLoading ? "Memverifikasi..." : "Verifikasi OTP"}
             </Button>
             <div className="text-center text-xs text-charcoal-60 mt-2">
-              Tidak menerima kode? <button onClick={handleRequestOtp} disabled={requestOtpLoading} className="text-sage-dark font-medium hover:underline">Kirim Ulang</button>
+              Tidak menerima kode? <button onClick={handleRequestOtp} disabled={requestOtpLoading || resendTimer > 0} className={`font-medium ${resendTimer > 0 ? 'text-charcoal-30 cursor-not-allowed' : 'text-sage-dark hover:underline'}`}>{resendTimer > 0 ? `Kirim Ulang (${resendTimer}s)` : 'Kirim Ulang'}</button>
             </div>
           </DialogFooter>
         </DialogContent>

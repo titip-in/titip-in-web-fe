@@ -57,7 +57,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore()
   if (isAuthenticated) {
-    if (user && (!user.status || !user.avatar_url || !user.wa_verified_at)) {
+    if (user && !user.wa_verified_at) {
       return <Navigate to="/setup-profile" replace />
     }
     return <Navigate to="/" replace />
