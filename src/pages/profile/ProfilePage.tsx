@@ -176,10 +176,10 @@ export default function ProfilePage() {
   };
 
   const handleForgotPasswordForGoogleUser = async () => {
-    if (!user?.email) return;
+    if (!profile?.email) return;
     setForgotPasswordLoading(true);
     try {
-      await api.post("/v1/forgot-password", { email: user.email });
+      await api.post("/v1/forgot-password", { email: profile.email });
       toast.success("Link reset password telah dikirim ke email Anda.");
       setIsPasswordDialogOpen(false);
     } catch (error: any) {
