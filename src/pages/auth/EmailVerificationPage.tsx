@@ -9,7 +9,7 @@ export default function EmailVerificationPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
-  const { user, setUser } = useAuthStore();
+  const { user, setAuth, token: authToken } = useAuthStore();
   
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("Memverifikasi email Anda...");
@@ -33,8 +33,8 @@ export default function EmailVerificationPage() {
         setMessage("Email Anda berhasil diverifikasi!");
         
         // Update user state if logged in
-        if (user) {
-          setUser({ ...user, email_verified_at: new Date().toISOString() });
+        if (user && authToken) {
+          setAuth({ ...user, email_verified_at: new Date().toISOString() }, authToken);
         }
       } catch (error: any) {
         setStatus("error");
@@ -43,7 +43,7 @@ export default function EmailVerificationPage() {
     };
 
     verifyEmail();
-  }, [token, user, setUser]);
+  }, [token, user, setAuth, authToken]);
 
   return (
     <div className="min-h-screen bg-warm-white flex items-center justify-center p-4 animate-fade-in">
