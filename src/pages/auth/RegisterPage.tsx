@@ -251,21 +251,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="flex items-start gap-2 pt-1">
-              <input
-                id="agree-terms"
-                type="checkbox"
-                className="h-4 w-4 rounded mt-0.5"
-                style={{ accentColor: "var(--sage)" }}
-              />
-              <Label htmlFor="agree-terms" className="text-sm cursor-pointer leading-snug"
-                style={{ color: "var(--charcoal-60)" }}>
-                Saya setuju dengan{" "}
-                <a href="#" className="font-medium underline" style={{ color: "var(--sage-dark)" }}>
-                  syarat dan ketentuan
-                </a>
-              </Label>
-            </div>
+
 
               <Button
                 type="submit"

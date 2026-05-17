@@ -292,7 +292,7 @@ export default function SetupProfilePage() {
 
       {/* OTP Verification Dialog */}
       <Dialog open={isOtpDialogOpen} onOpenChange={setIsOtpDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="text-center font-display text-2xl">Verifikasi WhatsApp</DialogTitle>
             <DialogDescription className="text-center">
