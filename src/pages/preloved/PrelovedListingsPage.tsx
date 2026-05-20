@@ -109,6 +109,8 @@ export default function PrelovedListingsPage() {
               images={listing.images}
               actionText="Cek Detail"
               isOwner={listing.user_id === user?.id}
+              userTier={listing.user?.tier}
+              boostedAt={listing.boosted_at}
               onClick={() => navigate(`/preloved/listings/${listing.id}`)}
               onWhatsApp={(wa) => {
                 const message = `Halo ${listing.user?.name || ''}, saya tertarik dengan barang preloved '${listing.title}' seharga ${formatRupiah(listing.price)} yang Anda jual di Titip.in. Apakah masih tersedia?`;

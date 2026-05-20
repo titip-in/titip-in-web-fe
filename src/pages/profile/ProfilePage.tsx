@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Package, ShoppingBag, LogOut, Mail, Info, ShieldCheck, AlertCircle, Phone, Lock, KeyRound, BarChart2 } from "lucide-react";
+import { Package, ShoppingBag, LogOut, Mail, Info, ShieldCheck, AlertCircle, Phone, Lock, KeyRound, BarChart2, Trash2 } from "lucide-react";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { useDeleteAccount } from "@/hooks/useAnalytics";
 import api from "@/lib/api";
 import {
   Dialog,
@@ -57,6 +58,9 @@ export default function ProfilePage() {
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [requestOtpLoading, setRequestOtpLoading] = useState(false);
+
+  // Locked features state
+  const [showLockedAnalytics, setShowLockedAnalytics] = useState(false);
   const [emailResendLoading, setEmailResendLoading] = useState(false);
   
   // Password State
@@ -66,6 +70,10 @@ export default function ProfilePage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+
+  // Delete Account State
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const deleteAccountMutation = useDeleteAccount();
 
   useEffect(() => {
     if (profile) {
@@ -347,6 +355,68 @@ export default function ProfilePage() {
         </div>
       </form>
 
+      {/* Subscription Plan Info Panel */}
+      <div className="mt-8 mb-4 animate-fade-in">
+        <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Status Keanggotaan</h2>
+        <div className="bg-elevated border border-subtle rounded-2xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden group">
+          {/* Accent colored glow behind */}
+          <div className={`absolute -right-16 -top-16 w-36 h-36 rounded-full opacity-10 blur-2xl pointer-events-none ${
+            tier === 'pro' ? 'bg-amber-500' :
+            tier === 'plus' ? 'bg-violet-500' :
+            'bg-charcoal-40'
+          }`} />
+
+          <div className="flex items-center gap-4 relative z-10">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm ${
+              tier === 'pro' ? 'bg-amber-50 text-amber-500 border border-amber-200' :
+              tier === 'plus' ? 'bg-violet-50 text-violet-600 border border-violet-200' :
+              'bg-charcoal-5 text-charcoal-60 border border-subtle'
+            }`}>
+              <ShieldCheck size={28} strokeWidth={2} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-display font-medium text-[20px] text-charcoal">
+                  Titip {tier === 'basic' ? 'Basic' : tier === 'plus' ? 'Plus' : 'Pro'}
+                </span>
+                <TierBadge tier={tier} />
+              </div>
+              <p className="text-[13px] text-charcoal-60 mt-1">
+                {tier === 'basic' 
+                  ? 'Gunakan fitur dasar Titip.in secara gratis.' 
+                  : `Anda memiliki akses ke semua benefit Titip ${tier.toUpperCase()}.`
+                }
+              </p>
+            </div>
+          </div>
+
+          {tier !== 'basic' && profile?.tier_expired_at ? (
+            <div className="shrink-0 bg-charcoal-5 border border-subtle rounded-xl px-5 py-3 text-left w-full md:w-auto relative z-10 flex flex-col justify-center">
+              <span className="text-[10px] uppercase font-black text-charcoal-40 tracking-widest">Berlaku Sampai</span>
+              <span className="text-[14px] font-bold text-charcoal mt-1 flex items-center gap-1.5">
+                {new Date(profile.tier_expired_at).toLocaleDateString('id-ID', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </span>
+            </div>
+          ) : tier === 'basic' ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full md:w-auto shrink-0 rounded-xl font-bold border-violet-200 text-violet-600 hover:bg-violet-50 relative z-10"
+              onClick={() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                toast.info("Silakan pilih paket langganan di bawah");
+              }}
+            >
+              Upgrade Plan
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
       {/* Limit Status Section */}
       <div className="mt-8 mb-4">
         <div className="flex items-center gap-2 mb-4">
@@ -481,6 +551,34 @@ export default function ProfilePage() {
       )}
 
       <div className="mt-8 mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="font-display text-[20px] font-medium text-charcoal">Analitik & Performa</h2>
+          {tier === "basic" && (
+            <div className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+              <Lock size={10} /> Pro
+            </div>
+          )}
+        </div>
+        <div 
+          onClick={() => tier === "basic" ? setShowLockedAnalytics(true) : navigate('/analytics')}
+          className={`bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer transition-all duration-200 flex items-center gap-4 ${tier === "basic" ? "opacity-75 hover:opacity-100" : "hover:shadow-md hover:border-charcoal-30"}`}
+        >
+          <div className="w-12 h-12 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0 relative">
+            <BarChart2 size={24} />
+            {tier === "basic" && (
+              <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 text-orange-500 shadow-sm border border-orange-100">
+                <Lock size={12} fill="currentColor" />
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="font-medium text-charcoal text-[15px]">Dashboard Analitik</div>
+            <div className="text-[13px] text-charcoal-60 mt-0.5">Pantau performa listing Anda</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 mb-4">
         <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Bantuan & Dukungan</h2>
         <a 
           href="mailto:support@titipin.me"
@@ -496,7 +594,15 @@ export default function ProfilePage() {
         </a>
       </div>
 
-      <div className="mt-8 border-t border-subtle pt-8 flex justify-center pb-8">
+      <div className="mt-8 border-t border-subtle pt-8 flex flex-col sm:flex-row justify-center gap-4 pb-8">
+        <Button 
+          variant="outline"
+          onClick={() => setIsDeleteDialogOpen(true)}
+          className="rounded-full border-red text-red hover:bg-red/10 w-full sm:w-auto px-8 flex items-center gap-2 font-medium"
+        >
+          <Trash2 size={18} />
+          <span>Hapus Akun</span>
+        </Button>
         <Button 
           variant="default"
           onClick={handleLogout}
@@ -609,6 +715,67 @@ export default function ProfilePage() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Account Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl text-red">Hapus Akun</DialogTitle>
+            <DialogDescription className="text-charcoal-60">
+              Apakah Anda yakin ingin menghapus akun ini? Tindakan ini akan menghapus akses Anda, tetapi riwayat transaksi Anda akan tetap aman. Anda dapat mendaftar kembali di kemudian hari.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 sm:justify-start">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteAccountMutation.mutate()}
+              disabled={deleteAccountMutation.isPending}
+            >
+              {deleteAccountMutation.isPending ? "Menghapus..." : "Ya, Hapus Akun"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Locked Analytics Dialog */}
+      <Dialog open={showLockedAnalytics} onOpenChange={setShowLockedAnalytics}>
+        <DialogContent className="sm:max-w-md text-center">
+          <DialogHeader>
+            <div className="mx-auto w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mb-4">
+              <Lock size={32} />
+            </div>
+            <DialogTitle className="text-2xl font-display font-medium text-charcoal text-center">Fitur Terkunci</DialogTitle>
+            <DialogDescription className="text-center text-[15px] pt-2 pb-4 text-charcoal-60">
+              Dashboard analitik mendalam hanya tersedia untuk pengguna <strong>Titip Plus</strong> dan <strong>Titip Pro</strong>. Upgrade sekarang untuk memantau performa listing Anda!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex flex-col gap-2.5">
+            <Button
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-violet-200 rounded-xl py-6 text-[15px] font-bold"
+              onClick={() => {
+                setShowLockedAnalytics(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                toast.info("Silakan pilih paket langganan Anda di bawah");
+              }}
+            >
+              Upgrade Sekarang
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-charcoal-50 hover:bg-charcoal-5 rounded-xl py-5 text-[14px]"
+              onClick={() => setShowLockedAnalytics(false)}
+            >
+              Nanti Saja
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

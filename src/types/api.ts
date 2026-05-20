@@ -253,3 +253,28 @@ export interface BoostResponse {
   remaining_quota: number;
   boosted_at: string;
 }
+
+// ── Analytics ─────────────────────────────────────────────
+export interface AnalyticsItemDetail {
+  id: string;
+  type: string;
+  title: string;
+  views: number;
+  clicks: number;
+  conversion_rate?: number | null; // Pro only
+}
+
+export interface AnalyticsResponse {
+  total_views: number;
+  total_clicks: number;
+  item_details: AnalyticsItemDetail[];
+  best_item?: AnalyticsItemDetail | null; // Pro only
+}
+
+// ── Subscription ──────────────────────────────────────────
+export type ItemClickType = 'jastip_listing' | 'jastip_request' | 'preloved_listing' | 'preloved_request';
+
+export interface SubscriptionUpgradePayload {
+  tier: Exclude<UserTier, 'basic'>;
+  payment_proof_url: string;
+}
