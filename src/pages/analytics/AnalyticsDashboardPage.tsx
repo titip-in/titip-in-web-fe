@@ -39,7 +39,7 @@ function StatCard({
   );
 }
 
-function ConversionBar({ rate }: { rate: number | null }) {
+function ConversionBar({ rate }: { rate?: number | null }) {
   const pct = rate != null ? Math.min(100, Math.round(rate)) : 0;
   return (
     <div className="flex items-center gap-2">
