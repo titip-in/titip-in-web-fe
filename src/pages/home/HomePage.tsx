@@ -11,6 +11,8 @@ import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 import { formatTimeAgoShort } from "@/lib/dateUtils";
 import { useActivity } from "@/hooks/useActivity";
+import { makeWhatsAppUrl, formatRupiah } from "@/lib/utils";
+import { Sparkles, Zap, Flame } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -217,7 +219,10 @@ export default function HomePage() {
                   actionText="Lihat Detail"
                   isOwner={listing.user_id === user?.id}
                   onClick={() => navigate(`/jastip/listings/${listing.id}`)}
-                  onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+                  onWhatsApp={(wa) => {
+                    const message = `Halo ${listing.user?.name || ''}, aku tertarik dengan jastip mu dari ${listing.from_loc} ke ${listing.to_loc} untuk item '${listing.title}' di Titip.in.`;
+                    window.open(makeWhatsAppUrl(wa, message), '_blank');
+                  }}
                 />
               ))
             ) : (
@@ -228,6 +233,69 @@ export default function HomePage() {
 
         {/* Right Panel — Quick Actions + Activity */}
         <aside className="flex flex-col gap-6 lg:col-span-1">
+          {/* Plan Status Banner */}
+          {user?.tier === 'basic' || !user?.tier ? (
+            <div className="bg-gradient-to-br from-charcoal to-[#2d2d2a] text-white rounded-xl shadow-sm border border-white/10 p-5 relative overflow-hidden">
+              <div className="absolute -right-8 -top-8 w-24 h-24 bg-gold/10 rounded-full blur-xl"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] font-bold tracking-wider uppercase text-gold bg-gold/10 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <Zap size={10} fill="currentColor" /> Free Tier
+                  </span>
+                  <span className="text-[11px] text-cream/60">Limit: {ACTIVE_LIMIT} Item Aktif</span>
+                </div>
+                <h4 className="font-display text-[15px] font-medium text-cream mb-1">Dapatkan Akses Tanpa Batas ⚡</h4>
+                <p className="text-[11px] text-cream/70 leading-relaxed mb-4">
+                  Upgrade ke **Titip Plus** atau **Pro** untuk menaikkan limit hingga 20 item, akses dashboard analitik, dan kuota Boost bulanan.
+                </p>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="w-full py-2 bg-gradient-to-r from-gold to-gold-dark text-white text-[12px] font-bold rounded-full hover:opacity-90 transition-all duration-200 active:scale-[0.98]"
+                >
+                  Upgrade Sekarang
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-br from-[#1c1c1e] to-charcoal text-white rounded-xl shadow-sm border border-subtle p-5 relative overflow-hidden">
+              <div className="absolute -right-8 -top-8 w-24 h-24 bg-sage/10 rounded-full blur-xl"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-3.5">
+                  <span className={`text-[11px] font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                    user.tier === 'pro' ? 'text-gold bg-gold/10' : 'text-purple-400 bg-purple-500/10'
+                  }`}>
+                    {user.tier === 'pro' ? <Zap size={10} fill="currentColor" /> : <Sparkles size={10} fill="currentColor" />}
+                    Titip {user.tier === 'pro' ? 'Pro' : 'Plus'}
+                  </span>
+                  <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Aktif
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <div className="text-[10px] text-cream/50 uppercase tracking-wider font-bold mb-0.5">Kuota Boost</div>
+                    <div className="text-[16px] font-extrabold text-cream flex items-center gap-1">
+                      <Flame size={14} className="text-orange-500" fill="currentColor" />
+                      {user.boost_quota ?? 0} <span className="text-[10px] font-normal text-cream/50">sisa</span>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-cream/50 uppercase tracking-wider font-bold mb-0.5">Limit Listing</div>
+                    <div className="text-[16px] font-extrabold text-cream">
+                      {jastipListingActiveCount + jastipRequestActiveCount + prelovedListingActiveCount}/{ACTIVE_LIMIT}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => navigate('/profile')}
+                  className="w-full py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-cream text-[11px] font-bold rounded-full transition-all duration-200 active:scale-[0.98]"
+                >
+                  Kelola Keanggotaan
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Quick Actions */}
           <div className="bg-elevated rounded-xl shadow-sm border border-subtle p-5">
             <h3 className="font-display text-[16px] font-medium text-charcoal mb-4">Aksi Cepat</h3>
@@ -392,7 +460,10 @@ export default function HomePage() {
                 actionText="Cek Detail"
                 isOwner={listing.user_id === user?.id}
                 onClick={() => navigate(`/preloved/listings/${listing.id}`)}
-                onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+                onWhatsApp={(wa) => {
+                  const message = `Halo ${listing.user?.name || ''}, saya tertarik dengan barang preloved '${listing.title}' seharga ${formatRupiah(listing.price)} yang Anda jual di Titip.in. Apakah masih tersedia?`;
+                  window.open(makeWhatsAppUrl(wa, message), '_blank');
+                }}
               />
             ))
           ) : (

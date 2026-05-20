@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Package, ShoppingBag, LogOut, Mail, Info, ShieldCheck, AlertCircle, Phone, Lock, KeyRound } from "lucide-react";
+import { Package, ShoppingBag, LogOut, Mail, Info, ShieldCheck, AlertCircle, Phone, Lock, KeyRound, BarChart2 } from "lucide-react";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
 import api from "@/lib/api";
 import {
@@ -18,6 +18,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TierBadge } from "@/components/ui/TierBadge";
+import { UpgradePlanBanner } from "@/components/profile/UpgradePlanBanner";
+import { TIER_BOOST_QUOTA } from "@/types/api";
 
 export default function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
@@ -35,7 +38,8 @@ export default function ProfilePage() {
     isJastipRequestLimitReached,
     isPrelovedListingLimitReached,
     isPrelovedRequestLimitReached,
-    ACTIVE_LIMIT 
+    ACTIVE_LIMIT,
+    tier 
   } = useActiveItemCount();
 
   const handleLogout = () => {
@@ -69,8 +73,13 @@ export default function ProfilePage() {
       setWaNumber(profile.wa_number || "");
       setStatus(profile.status || "");
       setAvatarUrl(profile.avatar_url || null);
+      
+      // Sync fetched profile (with up-to-date tier & boost_quota) to auth store
+      if (token) {
+        setAuthUser(profile, token);
+      }
     }
-  }, [profile]);
+  }, [profile, token, setAuthUser]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,6 +233,15 @@ export default function ProfilePage() {
               className="!h-auto"
             />
           </div>
+        </div>
+
+        <div className="flex flex-col items-center justify-center -mt-2 mb-6">
+          <TierBadge tier={tier} size="md" />
+          {tier !== 'basic' && profile?.boost_quota !== undefined && (
+            <div className="mt-2 text-[12px] text-charcoal-60 font-medium">
+              Sisa Boost: <span className="text-charcoal font-bold">{profile.boost_quota}/{TIER_BOOST_QUOTA[tier]}</span>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
@@ -411,6 +429,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      <UpgradePlanBanner currentTier={tier} />
+
       <div className="mt-8 mb-4">
         <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Aktivitas Saya</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -441,6 +461,24 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {tier !== "basic" && (
+        <div className="mt-8 mb-4">
+          <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Analitik & Performa</h2>
+          <div 
+            onClick={() => navigate('/analytics')}
+            className="bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-charcoal-30 transition-all duration-200 flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0">
+              <BarChart2 size={24} />
+            </div>
+            <div>
+              <div className="font-medium text-charcoal text-[15px]">Dashboard Analitik</div>
+              <div className="text-[13px] text-charcoal-60 mt-0.5">Pantau performa listing Anda</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 mb-4">
         <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Bantuan & Dukungan</h2>

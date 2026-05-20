@@ -4,6 +4,7 @@ import { JastipCard } from "@/components/home/JastipCard";
 import { useNavigate, NavLink } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { makeWhatsAppUrl } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -79,7 +80,10 @@ export default function JastipRequestsPage() {
               isOwner={request.user_id === user?.id}
               hideImage={true}
               onClick={() => navigate(`/jastip/requests/${request.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onWhatsApp={(wa) => {
+                const message = `Halo ${request.user?.name || ''}, saya melihat request jastip Anda dari ${request.from_loc} ke ${request.to_loc} untuk item '${request.title}' di Titip.in. Saya bisa membantu membelikannya.`;
+                window.open(makeWhatsAppUrl(wa, message), '_blank');
+              }}
             />
           ))
         ) : (

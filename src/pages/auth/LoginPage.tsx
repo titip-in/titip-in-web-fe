@@ -18,6 +18,8 @@ export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const errorHandled = useRef(false);
 
+  const { isAuthenticated } = useAuthStore();
+
   useEffect(() => {
     if (!errorHandled.current) {
       const errorParam = searchParams.get("error");
@@ -25,8 +27,30 @@ export default function LoginPage() {
         toast.error("Autentikasi Google gagal atau dibatalkan. Silakan coba lagi.");
         errorHandled.current = true;
       }
+
+      const expiredParam = searchParams.get("expired");
+      if (expiredParam === "true") {
+        toast.error("Sesi Anda telah berakhir. Silakan masuk kembali.");
+        errorHandled.current = true;
+      }
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (isAuthenticated && !searchParams.get("expired")) {
+        try {
+          await api.get("/v1/me");
+          navigate("/", { replace: true });
+        } catch (err: any) {
+          if (err.response?.status === 401) {
+            // Token is stale, wait for interceptor to log out
+          }
+        }
+      }
+    };
+    checkAuth();
+  }, [isAuthenticated, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,22 +205,22 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <input
                   id="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 rounded"
+                  className="h-4 w-4 rounded cursor-pointer"
                   style={{ accentColor: "var(--sage)" }}
                 />
-                <Label htmlFor="remember-me" className="text-sm cursor-pointer"
+                <Label htmlFor="remember-me" className="text-sm cursor-pointer font-medium"
                   style={{ color: "var(--charcoal-60)" }}>
                   Ingat saya
                 </Label>
               </div>
               <Link
                 to="/forgot-password"
-                className="text-sm font-medium hover:underline"
+                className="text-sm font-semibold hover:underline"
                 style={{ color: "var(--sage-dark)" }}
               >
                 Lupa password?

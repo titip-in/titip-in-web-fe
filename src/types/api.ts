@@ -3,6 +3,27 @@
 // Base URL: https://titipin-api.bccdev.id/api
 // ============================================================
 
+// ── Freemium Tier ─────────────────────────────────────────
+export type UserTier = 'basic' | 'plus' | 'pro';
+
+export const TIER_LIMITS: Record<UserTier, number> = {
+  basic: 3,
+  plus: 10,
+  pro: 20,
+};
+
+export const TIER_BOOST_QUOTA: Record<UserTier, number> = {
+  basic: 0,
+  plus: 1,
+  pro: 5,
+};
+
+export const TIER_LABELS: Record<UserTier, string> = {
+  basic: 'Titip Basic',
+  plus: 'Titip Plus',
+  pro: 'Titip Pro',
+};
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -48,6 +69,21 @@ export interface User {
   wa_verified_at?: string | null;
   avatar_url: string | null;
   status: string | null;
+  auth_provider: string;
+  created_at: string | null;
+  updated_at: string | null;
+  // Freemium tier fields
+  tier: UserTier;
+  boost_quota: number;
+  is_banned: boolean;
+  tier_expired_at: string | null;
+}
+
+// ── Admin ─────────────────────────────────────────────────
+export interface Admin {
+  id: number;
+  name: string;
+  email: string;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -90,6 +126,7 @@ export interface JastipListing {
   created_at: string | null;
   updated_at: string | null;
   embedding?: string | null;
+  boosted_at: string | null;
   // Relasi (jika di-include backend)
   user?: User;
   category?: Category;
@@ -122,6 +159,7 @@ export interface JastipRequest {
   status: 'OPEN' | 'TAKEN' | 'CLOSED';
   created_at: string | null;
   updated_at: string | null;
+  boosted_at: string | null;
   // Relasi
   user?: User;
   category?: Category;
@@ -152,6 +190,7 @@ export interface PrelovedListing {
   created_at: string | null;
   updated_at: string | null;
   embedding?: string | null;
+  boosted_at: string | null;
   // Relasi
   user?: User;
   category?: Category;
@@ -179,6 +218,7 @@ export interface PrelovedRequest {
   status: 'OPEN' | 'FOUND' | 'CLOSED';
   created_at: string | null;
   updated_at: string | null;
+  boosted_at: string | null;
   // Relasi
   user?: User;
   category?: Category;
@@ -206,4 +246,10 @@ export interface SearchCursorPaginated<T> {
   next_page_url: string | null;
   prev_cursor: string | null;
   prev_page_url: string | null;
+}
+
+// ── Boost ─────────────────────────────────────────────────
+export interface BoostResponse {
+  remaining_quota: number;
+  boosted_at: string;
 }

@@ -6,6 +6,7 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { makeWhatsAppUrl } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -108,7 +109,10 @@ export default function JastipListingsPage() {
               actionText="Lihat Detail"
               isOwner={listing.user_id === user?.id}
               onClick={() => navigate(`/jastip/listings/${listing.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onWhatsApp={(wa) => {
+                const message = `Halo ${listing.user?.name || ''}, aku tertarik dengan jastip mu dari ${listing.from_loc} ke ${listing.to_loc} untuk item '${listing.title}' di Titip.in.`;
+                window.open(makeWhatsAppUrl(wa, message), '_blank');
+              }}
             />
           ))
         ) : (

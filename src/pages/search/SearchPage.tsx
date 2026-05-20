@@ -5,6 +5,7 @@ import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { JastipCard } from "@/components/home/JastipCard";
 import { CategoryScroll } from "@/components/ui/CategoryScroll";
 import { useAuthStore } from "@/stores/authStore";
+import { makeWhatsAppUrl, formatRupiah } from "@/lib/utils";
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
@@ -135,7 +136,10 @@ export default function SearchPage() {
                 actionText="Cek Detail"
                 isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/preloved/listings/${item.id}`)}
-                onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+                onWhatsApp={(wa) => {
+                  const message = `Halo ${item.user?.name || ''}, saya tertarik dengan barang preloved '${item.title}' seharga ${formatRupiah(item.price)} yang Anda jual di Titip.in. Apakah masih tersedia?`;
+                  window.open(makeWhatsAppUrl(wa, message), '_blank');
+                }}
               />
             ) : (
               <JastipCard
@@ -158,7 +162,10 @@ export default function SearchPage() {
                 actionText="Lihat Detail"
                 isOwner={item.user_id === user?.id}
                 onClick={() => navigate(`/jastip/listings/${item.id}`)}
-                onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+                onWhatsApp={(wa) => {
+                  const message = `Halo ${item.user?.name || ''}, aku tertarik dengan jastip mu dari ${item.from_loc} ke ${item.to_loc} untuk item '${item.title}' di Titip.in.`;
+                  window.open(makeWhatsAppUrl(wa, message), '_blank');
+                }}
               />
             )
           ))}

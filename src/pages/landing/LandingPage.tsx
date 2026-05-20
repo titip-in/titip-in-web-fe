@@ -112,7 +112,7 @@ export default function LandingPage() {
           <div className="nav-links-desktop">
             <a href="#fitur" className="nav-link">Fitur</a>
             <a href="#cara-kerja" className="nav-link">Cara Kerja</a>
-            <a href="#showcase" className="nav-link">Preview</a>
+            <a href="#pricing" className="nav-link">Harga & Plan</a>
             <Link to="/about" className="nav-link">Tentang Kami</Link>
           </div>
 
@@ -138,7 +138,7 @@ export default function LandingPage() {
           <div className="nav-mobile-menu">
             <a href="#fitur" className="nav-link" onClick={() => setMobileNav(false)}>Fitur</a>
             <a href="#cara-kerja" className="nav-link" onClick={() => setMobileNav(false)}>Cara Kerja</a>
-            <a href="#showcase" className="nav-link" onClick={() => setMobileNav(false)}>Preview</a>
+            <a href="#pricing" className="nav-link" onClick={() => setMobileNav(false)}>Harga & Plan</a>
             <Link to="/about" className="nav-link" onClick={() => setMobileNav(false)}>Tentang Kami</Link>
             <div className="nav-mobile-actions">
               <Link to="/android" className="nav-btn-ghost" onClick={() => setMobileNav(false)} style={{ border: "1.5px solid var(--charcoal-30)", borderRadius: "9999px", display: "flex", alignItems: "center", gap: "6px" }}>📱 Android App</Link>
@@ -408,6 +408,156 @@ export default function LandingPage() {
                   <h3 className="showcase-title">{item.title}</h3>
                   <p className="showcase-desc">{item.desc}</p>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ PRICING PLANS ═══ */}
+      <section className="how-section revealed" id="pricing" style={{ background: "var(--cream-dark)", borderTop: "1.5px solid var(--border-subtle)", borderBottom: "1.5px solid var(--border-subtle)", padding: "100px 0" }}>
+        <div className="section-inner">
+          <div className="section-header">
+            <span className="section-eyebrow">Pilihan Keanggotaan</span>
+            <h2 className="section-title">Temukan Plan Terbaikmu</h2>
+            <p className="section-desc">
+              Gabung dengan komunitas jastip & preloved hyperlokal Malang. Pilih plan yang sesuai dengan intensitas aktivitasmu.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "32px", maxWidth: "1000px", margin: "0 auto", alignItems: "stretch" }}>
+            {[
+              {
+                title: "Titip Basic",
+                price: "Rp 0",
+                period: "selamanya",
+                desc: "Cocok untuk mahasiswa yang sesekali ingin mencari jastip atau menjual barang bekas.",
+                features: [
+                  "Maksimal 3 item aktif",
+                  "1 foto per listing",
+                  "Hubungi pemilik via WhatsApp",
+                  "Bebas biaya platform"
+                ],
+                cta: "Daftar Gratis",
+                popular: false,
+                color: "var(--charcoal-60)",
+                badge: null
+              },
+              {
+                title: "Titip Plus",
+                price: "Rp 10.000",
+                period: "/ bulan",
+                desc: "Pilihan terbaik untuk mahasiswa aktif belanja & jastip rutin di area Malang.",
+                features: [
+                  "Maksimal 10 item aktif",
+                  "Hingga 3 foto per listing",
+                  "Badge premium 'Plus' di profil & listing",
+                  "1 kuota Boost listing tiap bulan",
+                  "Akses dashboard analitik klik WhatsApp"
+                ],
+                cta: "Mulai Titip Plus",
+                popular: true,
+                color: "var(--terracotta)",
+                badge: "Terpopuler"
+              },
+              {
+                title: "Titip Pro",
+                price: "Rp 25.000",
+                period: "/ bulan",
+                desc: "Maksimalkan penjualan barang preloved dan kelola banyak rute jastip sekaligus.",
+                features: [
+                  "Maksimal 20 item aktif",
+                  "Hingga 5 foto per listing",
+                  "Badge eksklusif 'Pro' di profil & listing",
+                  "5 kuota Boost listing tiap bulan",
+                  "Analitik konversi & listing terlaris",
+                  "Prioritas pencarian (Top Result)"
+                ],
+                cta: "Gabung Pro Sekarang",
+                popular: false,
+                color: "var(--gold-dark)",
+                badge: "Fitur Terlengkap"
+              }
+            ].map((plan, i) => (
+              <div 
+                key={i} 
+                style={{
+                  background: "white",
+                  border: plan.popular ? "2px solid var(--terracotta)" : "1.5px solid var(--border-subtle)",
+                  borderRadius: "24px",
+                  padding: "36px 28px",
+                  display: "flex",
+                  flexDirection: "column",
+                  position: "relative",
+                  boxShadow: plan.popular ? "0 20px 40px rgba(193,100,72,0.12)" : "var(--shadow-sm)",
+                  transform: plan.popular ? "scale(1.02)" : "scale(1)",
+                  transition: "all 0.3s"
+                }}
+              >
+                {plan.badge && (
+                  <span style={{
+                    position: "absolute",
+                    top: "-12px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: plan.popular ? "var(--terracotta)" : "var(--charcoal)",
+                    color: "white",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    padding: "4px 12px",
+                    borderRadius: "9999px"
+                  }}>
+                    {plan.badge}
+                  </span>
+                )}
+                
+                <h3 style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: 500, color: "var(--charcoal)", marginBottom: "8px", marginTop: "4px" }}>
+                  {plan.title}
+                </h3>
+                
+                <p style={{ fontSize: "13px", color: "var(--charcoal-60)", minHeight: "40px", marginBottom: "20px", lineHeight: "1.5" }}>
+                  {plan.desc}
+                </p>
+                
+                <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "24px" }}>
+                  <span style={{ fontSize: "32px", fontWeight: 700, color: "var(--charcoal)" }}>{plan.price}</span>
+                  <span style={{ fontSize: "14px", color: "var(--charcoal-60)" }}>{plan.period}</span>
+                </div>
+                
+                <div style={{ flex: 1, marginBottom: "32px" }}>
+                  <p style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--charcoal-40)", marginBottom: "12px" }}>
+                    FASILITAS:
+                  </p>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {plan.features.map((feat, fi) => (
+                      <li key={fi} style={{ display: "flex", alignItems: "flex-start", gap: "8px", fontSize: "13px", color: "var(--charcoal-80)", lineHeight: "1.4" }}>
+                        <span style={{ color: plan.color, fontSize: "14px", fontWeight: 700 }}>✓</span>
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <Link 
+                  to="/register" 
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    background: plan.popular ? "var(--terracotta)" : "var(--charcoal)",
+                    color: "white",
+                    padding: "12px 24px",
+                    borderRadius: "9999px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    transition: "all 0.2s"
+                  }}
+                  className="hover:opacity-90"
+                >
+                  {plan.cta}
+                </Link>
               </div>
             ))}
           </div>

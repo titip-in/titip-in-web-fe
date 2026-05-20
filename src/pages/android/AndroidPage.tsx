@@ -89,6 +89,7 @@ export default function AndroidPage() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -126,24 +127,48 @@ export default function AndroidPage() {
       {/* ═══ NAVBAR (same as LandingPage) ═══ */}
       <nav className={`landing-nav${scrolled ? " nav-scrolled" : ""}`}>
         <div className="nav-inner">
-          <Link to="/landing" className="nav-brand">
+          <Link to="/" className="nav-brand">
             <span className="brand-logo">Titip.in</span>
           </Link>
 
           <div className="nav-links-desktop">
             <Link to="/landing#fitur" className="nav-link">Fitur</Link>
             <Link to="/landing#cara-kerja" className="nav-link">Cara Kerja</Link>
-            <Link to="/android" className="nav-link" style={{ color: "var(--terracotta)", fontWeight: 600 }}>
-              📱 Android App
-            </Link>
+            <Link to="/landing#pricing" className="nav-link">Harga & Plan</Link>
             <Link to="/about" className="nav-link">Tentang Kami</Link>
           </div>
 
           <div className="nav-actions">
+            <Link to="/android" className="nav-btn-ghost" style={{ display: "flex", alignItems: "center", gap: "6px", border: "1.5px solid var(--charcoal-30)", borderRadius: "9999px" }}>
+              <span>📱</span> Android
+            </Link>
             <Link to="/login" className="nav-btn-ghost">Masuk</Link>
             <Link to="/register" className="nav-btn-cta">Daftar Gratis</Link>
           </div>
+
+          <button
+            className="nav-mobile-toggle"
+            onClick={() => setMobileNav(!mobileNav)}
+            aria-label="Toggle navigation"
+          >
+            <span /><span /><span />
+          </button>
         </div>
+
+        {/* Mobile nav */}
+        {mobileNav && (
+          <div className="nav-mobile-menu">
+            <Link to="/landing#fitur" className="nav-link" onClick={() => setMobileNav(false)}>Fitur</Link>
+            <Link to="/landing#cara-kerja" className="nav-link" onClick={() => setMobileNav(false)}>Cara Kerja</Link>
+            <Link to="/landing#pricing" className="nav-link" onClick={() => setMobileNav(false)}>Harga & Plan</Link>
+            <Link to="/about" className="nav-link" onClick={() => setMobileNav(false)}>Tentang Kami</Link>
+            <div className="nav-mobile-actions">
+              <Link to="/android" className="nav-btn-ghost" onClick={() => setMobileNav(false)} style={{ border: "1.5px solid var(--charcoal-30)", borderRadius: "9999px", display: "flex", alignItems: "center", gap: "6px" }}>📱 Android App</Link>
+              <Link to="/login" className="nav-btn-ghost" onClick={() => setMobileNav(false)}>Masuk</Link>
+              <Link to="/register" className="nav-btn-cta" onClick={() => setMobileNav(false)}>Daftar Gratis</Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* ═══ HERO ═══ */}

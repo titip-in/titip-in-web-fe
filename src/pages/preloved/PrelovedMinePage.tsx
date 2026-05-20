@@ -20,8 +20,10 @@ import {
 import { usePrelovedListingDetail, usePrelovedRequestDetail } from "@/hooks/usePreloved";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { useBoostItem } from "@/hooks/useBoost";
+import { makeWhatsAppUrl, formatRupiah } from "@/lib/utils";
 
-function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
+function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit, onBoost }: any) {
   // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
   const { data: listingDetail } = usePrelovedListingDetail(activeTab === 'listings' ? item.id : "");
   const { data: requestDetail } = usePrelovedRequestDetail(activeTab === 'requests' ? item.id : "");
@@ -67,14 +69,25 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
       onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
+      onBoost={() => onBoost(fullData.id, activeTab)}
       onClick={onClick}
       hideImage={activeTab === 'requests'}
-      onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+      onWhatsApp={(wa) => {
+        const budgetText = fullData.max_price ? formatRupiah(fullData.max_price) : 'Nego';
+        const message = activeTab === 'listings'
+          ? `Halo ${fullData.user?.name || ''}, saya tertarik dengan barang preloved '${fullData.title}' seharga ${formatRupiah(fullData.price)} yang Anda jual di Titip.in. Apakah masih tersedia?`
+          : `Halo ${fullData.user?.name || ''}, saya melihat Anda sedang mencari barang preloved '${fullData.title}' dengan budget maksimal ${budgetText} di Titip.in. Saya memiliki barang tersebut dan ingin menawarkannya.`;
+        window.open(makeWhatsAppUrl(wa, message), '_blank');
+      }}
+      userTier={currentUser?.tier}
+      boostedAt={fullData.boosted_at}
+      boostQuota={currentUser?.boost_quota}
     />
   );
 }
 
 export default function PrelovedMinePage() {
+  const currentUser = useAuthStore((s) => s.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"listings" | "requests">((searchParams.get("tab") as "listings" | "requests") || "listings");
 
@@ -98,6 +111,7 @@ export default function PrelovedMinePage() {
 
   const deleteListing = useDeletePrelovedListing();
   const deleteRequest = useDeletePrelovedRequest();
+  const boostItem = useBoostItem();
 
   const isLoading = activeTab === "listings" ? loadingListings : loadingRequests;
   const currentData = activeTab === "listings" ? listings : requests;
@@ -127,6 +141,51 @@ export default function PrelovedMinePage() {
     setDialogOpen(true);
   };
 
+  const handleBoost = (id: string, tab: string) => {
+    // Gate: basic tier has no boost at all, others check remaining quota
+    if (!currentUser?.tier || currentUser.tier === 'basic') {
+      confirmAction(
+        "⚡ Upgrade untuk Boost",
+        "Fitur Boost hanya tersedia untuk pengguna Titip Plus dan Pro. Upgrade sekarang untuk memprioritaskan listing kamu di halaman utama dan meningkatkan visibilitas.",
+        async () => {}
+      );
+      return;
+    }
+
+    if ((currentUser?.boost_quota ?? 0) <= 0) {
+      confirmAction(
+        "Kuota Boost Habis",
+        `Kuota boost kamu bulan ini sudah habis. Kamu bisa upgrade ke plan yang lebih tinggi untuk mendapatkan lebih banyak kuota boost, atau tunggu sampai awal bulan depan ketika kuota direset secara otomatis.`,
+        async () => {}
+      );
+      return;
+    }
+
+    const targetItem = activeTab === 'listings' ? listings?.find(l => l.id === id) : requests?.find(r => r.id === id);
+    
+    const executeBoost = () => {
+      boostItem.mutate({
+        type: tab === 'listings' ? 'preloved_listing' : 'preloved_request',
+        id
+      });
+    };
+
+    if (targetItem?.boosted_at) {
+      confirmAction(
+        "Boost Ulang Item?",
+        "Item ini sudah dipromosikan. Melakukan boost lagi akan memotong 1 kuota untuk menaikkan posisi item ini ke paling atas. Lanjutkan?",
+        executeBoost
+      );
+    } else {
+      confirmAction(
+        "Promosikan Item ini?",
+        `Ingin menggunakan 1 kuota Boost untuk mempromosikan item ini? Tindakan ini akan menaikkan posisi item ini ke paling atas di halaman utama agar lebih mudah dilihat pembeli. Sisa kuota Anda: ${currentUser.boost_quota || 0}.`,
+        executeBoost
+      );
+    }
+  };
+
+
   const handleStatusChange = (id: string, newStatus: string) => {
     // When re-opening (AVAILABLE or OPEN), check limit first
     if (newStatus === 'AVAILABLE' || newStatus === 'OPEN') {
@@ -145,9 +204,14 @@ export default function PrelovedMinePage() {
       return 'Aktif';
     };
 
+    const targetItem = activeTab === 'listings' ? listings?.find(l => l.id === id) : requests?.find(r => r.id === id);
+    const isLosingBoost = targetItem?.boosted_at && (newStatus === 'SOLD' || newStatus === 'FOUND' || newStatus === 'CLOSED');
+
     confirmAction(
       "Konfirmasi Ubah Status",
-      `Ubah status menjadi ${getLabel(newStatus)}?`,
+      isLosingBoost 
+        ? `Item ini sedang dipromosikan (boosted). Mengubah status menjadi ${getLabel(newStatus)} akan menghapus promosinya dan kuota tidak akan dikembalikan. Lanjutkan?`
+        : `Ubah status menjadi ${getLabel(newStatus)}?`,
       async () => {
         try {
           const endpoint = activeTab === 'listings' ? `/v1/preloved/listings/${id}` : `/v1/preloved/requests/${id}`;
@@ -254,6 +318,7 @@ export default function PrelovedMinePage() {
               onStatusChange={handleStatusChange}
               onDeleteListing={handleDeleteListing}
               onDeleteRequest={handleDeleteRequest}
+              onBoost={handleBoost}
               onClick={() => navigate(`/preloved/${activeTab === 'listings' ? 'listings' : 'requests'}/${item.id}`)}
               onEdit={() => navigate(`/preloved/${activeTab === 'listings' ? 'listings' : 'requests'}/edit/${item.id}`)}
             />
