@@ -532,6 +532,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {tier !== "basic" && (
+        <div className="mt-8 mb-4">
+          <h2 className="font-display text-[20px] font-medium text-charcoal mb-4">Analitik & Performa</h2>
+          <div 
+            onClick={() => navigate('/analytics')}
+            className="bg-elevated border border-subtle rounded-xl p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-charcoal-30 transition-all duration-200 flex items-center gap-4"
+          >
+            <div className="w-12 h-12 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center flex-shrink-0">
+              <BarChart2 size={24} />
+            </div>
+            <div>
+              <div className="font-medium text-charcoal text-[15px]">Dashboard Analitik</div>
+              <div className="text-[13px] text-charcoal-60 mt-0.5">Pantau performa listing Anda</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8 mb-4">
         <div className="flex items-center gap-2 mb-4">
           <h2 className="font-display text-[20px] font-medium text-charcoal">Analitik & Performa</h2>

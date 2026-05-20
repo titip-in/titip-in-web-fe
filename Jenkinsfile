@@ -60,7 +60,7 @@ pipeline {
                         sshagent(['titipin-fe-ec2']) {
                             sh """
                             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} '
-                                # 1. Tentukan kontainer yang aktif saat ini (Blue atau Green)
+                                # 1. Tentukan kontainer yang aktif saat ini (Blue, Green, atau legacy Web)
                                 if docker ps --format "{{.Names}}" | grep -q "^frontend-blue\$"; then
                                     ACTIVE="blue"
                                     NEW="green"
@@ -71,6 +71,11 @@ pipeline {
                                     NEW="blue"
                                     NEW_PORT="3001"
                                     OLD_PORT="3002"
+                                elif docker ps --format "{{.Names}}" | grep -q "^frontend-web\$"; then
+                                    ACTIVE="web"
+                                    NEW="green"
+                                    NEW_PORT="3002"
+                                    OLD_PORT="3001"
                                 else
                                     ACTIVE="none"
                                     NEW="blue"
@@ -90,7 +95,10 @@ pipeline {
                                 docker rm frontend-\$NEW || true
 
                                 # 4. Jalankan kontainer baru
-                                docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                                docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} || {
+                                    echo "Error: Gagal menjalankan kontainer baru frontend-\$NEW! ❌"
+                                    exit 1
+                                }
 
                                 # 5. Lakukan Health Check (Tunggu hingga kontainer baru siap menerima traffic)
                                 echo "Melakukan health check pada kontainer baru di port \$NEW_PORT..."
