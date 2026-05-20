@@ -96,3 +96,8 @@ src/
 ## 📄 License
 
 This project is private and for internal use only.
+
+## Contact
+[support@titipin.me] 
+
+[okta@titipin.me]
