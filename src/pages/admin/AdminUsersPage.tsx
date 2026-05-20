@@ -272,10 +272,10 @@ export default function AdminUsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-center text-charcoal">Hapus Akun Pengguna?</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-charcoal-60">
-              Apakah Anda yakin ingin menghapus akun <strong>{confirmDelete?.name}</strong> secara permanen?
+              Apakah Anda yakin ingin melakukan <strong className="text-red">FORCE DELETE</strong> pada akun <strong>{confirmDelete?.name}</strong>?
               <br />
-              <span className="text-red-600 font-medium text-xs mt-2 block">
-                ⚠️ PERINGATAN: Tindakan ini akan menghapus seluruh data terkait pengguna dan tidak dapat dipulihkan.
+              <span className="text-red font-bold text-xs mt-3 block p-2 bg-red/10 rounded-lg border border-red/20">
+                ⚠️ PERINGATAN KERAS: Berbeda dengan hapus akun mandiri, tindakan ini akan menghapus akun secara permanen dari database. ID, Email, dan seluruh data terkait tidak akan bisa direstore.
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>

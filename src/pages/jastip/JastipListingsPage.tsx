@@ -108,6 +108,8 @@ export default function JastipListingsPage() {
               images={listing.images}
               actionText="Lihat Detail"
               isOwner={listing.user_id === user?.id}
+              userTier={listing.user?.tier}
+              boostedAt={listing.boosted_at}
               onClick={() => navigate(`/jastip/listings/${listing.id}`)}
               onWhatsApp={(wa) => {
                 const message = `Halo ${listing.user?.name || ''}, aku tertarik dengan jastip mu dari ${listing.from_loc} ke ${listing.to_loc} untuk item '${listing.title}' di Titip.in.`;

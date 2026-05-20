@@ -79,6 +79,8 @@ export default function PrelovedRequestsPage() {
               actionText="Jual Barang Ini"
               isOwner={request.user_id === user?.id}
               hideImage={true}
+              userTier={request.user?.tier}
+              boostedAt={request.boosted_at}
               onClick={() => navigate(`/preloved/requests/${request.id}`)}
               onWhatsApp={(wa) => {
                 const budgetText = request.max_price ? formatRupiah(request.max_price) : 'Nego';

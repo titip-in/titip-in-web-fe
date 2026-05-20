@@ -10,6 +10,8 @@ import api from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories } from "@/hooks/useCategory";
 import { makeWhatsAppUrl } from "@/lib/utils";
+import { useClickItem } from "@/hooks/useAnalytics";
+import { TierBadge } from "@/components/ui/TierBadge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +26,7 @@ import {
 export default function JastipRequestDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const clickMutation = useClickItem();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const { data: item, isLoading } = useJastipRequestDetail(id || "");
@@ -154,10 +157,18 @@ export default function JastipRequestDetailPage() {
           <div className="bg-elevated border border-subtle rounded-2xl p-8 lg:p-12 shadow-sm">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <div className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[12px] font-bold tracking-wide uppercase ${item.status === 'OPEN' ? 'bg-sage text-white' : item.status === 'TAKEN' ? 'bg-gold text-white' : 'bg-charcoal-20 text-charcoal-60'} mb-4`}>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <div className={`inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[12px] font-bold tracking-wide uppercase ${item.status === 'OPEN' ? 'bg-sage text-white' : item.status === 'TAKEN' ? 'bg-gold text-white' : 'bg-charcoal-20 text-charcoal-60'}`}>
                   <div className="w-[6px] h-[6px] rounded-full bg-current"></div>
                   {item.status === 'OPEN' ? 'Terbuka' : item.status === 'TAKEN' ? 'Diambil' : 'Ditutup'}
                 </div>
+                {item.boosted_at && (
+                  <div className="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-[12px] font-bold tracking-wide uppercase bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm">
+                    <Flame size={14} fill="currentColor" />
+                    Dipromosikan
+                  </div>
+                )}
+              </div>
                 <h1 className="text-[32px] font-display font-medium text-charcoal leading-tight mb-2">
                   {item.title || "Request Jastip"}
                 </h1>
@@ -260,8 +271,9 @@ export default function JastipRequestDetailPage() {
                 )}
               </div>
               <div>
-                <div className="text-base font-bold text-charcoal flex items-center gap-1.5">
+                <div className="text-sm font-semibold text-charcoal flex items-center gap-1.5 flex-wrap">
                   {item.user?.name || "User"}
+                  {item.user?.tier && <TierBadge tier={item.user.tier} size="xs" />}
                   {item.user?.wa_verified_at && (
                     <span className="flex items-center text-sage text-[10px] font-bold px-1.5 py-0.5 rounded bg-sage-pale leading-none" title="Nomor WhatsApp Terverifikasi">
                       <ShieldCheck size={10} className="mr-0.5" /> WA Verified
@@ -277,6 +289,7 @@ export default function JastipRequestDetailPage() {
             {!isOwner && (
               <Button 
                 onClick={() => {
+                  clickMutation.mutate({ type: 'jastip_request', id: item.id });
                   const message = `Halo ${item.user?.name || ''}, saya melihat request jastip Anda dari ${item.from_loc} ke ${item.to_loc} untuk item '${item.title}' di Titip.in. Saya bisa membantu membelikannya.`;
                   window.open(makeWhatsAppUrl(item.user?.wa_number || '', message), '_blank');
                 }}

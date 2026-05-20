@@ -79,6 +79,8 @@ export default function JastipRequestsPage() {
               actionText="Ambil Request"
               isOwner={request.user_id === user?.id}
               hideImage={true}
+              userTier={request.user?.tier}
+              boostedAt={request.boosted_at}
               onClick={() => navigate(`/jastip/requests/${request.id}`)}
               onWhatsApp={(wa) => {
                 const message = `Halo ${request.user?.name || ''}, saya melihat request jastip Anda dari ${request.from_loc} ke ${request.to_loc} untuk item '${request.title}' di Titip.in. Saya bisa membantu membelikannya.`;
