@@ -1,8 +1,9 @@
 import React from "react";
 import { CardImageCarousel } from "./CardImageCarousel";
-import { ListingImage } from "@/types/api";
-import { Pause, Play, Trash2, ArrowRight } from "lucide-react";
+import { ListingImage, UserTier } from "@/types/api";
+import { Pause, Play, Trash2, ArrowRight, Zap, Flame } from "lucide-react";
 import { ListingPlaceholder } from "../ui/ListingPlaceholder";
+import { TierBadge } from "../ui/TierBadge";
 
 interface JastipCardProps {
   user: {
@@ -31,12 +32,16 @@ interface JastipCardProps {
   onStatusChange?: (newStatus: string) => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onBoost?: () => void;
   isOwner?: boolean;
   hideImage?: boolean;
+  userTier?: UserTier;
+  boostedAt?: string | null;
+  boostQuota?: number;
 }
 
 export function JastipCard({ 
-  user, timeAgo, status, route, title, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onEdit, onDelete, isOwner, hideImage 
+  user, timeAgo, status, route, title, tags, deadline, notes, actionText, onClick, onWhatsApp, imageUrl, images, onStatusChange, onEdit, onDelete, onBoost, isOwner, hideImage, userTier, boostedAt, boostQuota
 }: JastipCardProps) {
   const isAvailable = status === "ACTIVE" || status === "Aktif" || status === "OPEN";
 
@@ -68,6 +73,12 @@ export function JastipCard({
               <ListingPlaceholder />
             </div>
           )}
+          {boostedAt && (
+            <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+              <Flame size={12} fill="currentColor" />
+              Dipromosikan
+            </div>
+          )}
         </>
       )}
 
@@ -82,7 +93,10 @@ export function JastipCard({
               )}
             </div>
             <div>
-              <div className="jcard-name text-[14px] font-semibold text-charcoal">{user.name}</div>
+              <div className="jcard-name text-[14px] font-semibold text-charcoal flex items-center gap-1.5">
+                {user.name}
+                {userTier && <TierBadge tier={userTier} size="xs" />}
+              </div>
               <div className="jcard-meta text-[11px] text-charcoal-60 mt-[1px]">Dibuat {timeAgo}</div>
             </div>
           </div>
@@ -94,6 +108,12 @@ export function JastipCard({
             {isOwner && (
               <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
                 Milik Saya
+              </span>
+            )}
+            {boostedAt && hideImage && (
+              <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm shrink-0">
+                <Flame size={10} fill="currentColor" />
+                Dipromosikan
               </span>
             )}
           </div>
@@ -132,6 +152,16 @@ export function JastipCard({
           
           <div className="flex gap-2 ml-auto">
             {/* Owner CRUD actions */}
+            {isOwner && isAvailable && onBoost && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onBoost(); }}
+                title="Boost Listing"
+                className="btn btn-sm rounded-full text-[11px] font-semibold py-2 px-3 transition-colors flex items-center gap-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-sm hover:opacity-90"
+              >
+                <Zap size={12} fill="currentColor" />
+                <span className="hidden sm:inline">Boost</span>
+              </button>
+            )}
             {isOwner && onStatusChange && (
               <button
                 onClick={(e) => { e.stopPropagation(); onStatusChange(isAvailable ? 'CLOSED' : 'ACTIVE'); }}

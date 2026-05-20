@@ -20,9 +20,11 @@ import {
 import { useJastipListingDetail, useJastipRequestDetail } from "@/hooks/useJastip";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { useBoostItem } from "@/hooks/useBoost";
 import { Input } from "@/components/ui/input";
+import { makeWhatsAppUrl } from "@/lib/utils";
 
-function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit }: any) {
+function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListing, onDeleteRequest, onClick, onEdit, onBoost }: any) {
   // Fetch details to get missing relations (like images, user) that are not returned by the paginated /me endpoint
   const { data: listingDetail } = useJastipListingDetail(activeTab === 'listings' ? item.id : "");
   const { data: requestDetail } = useJastipRequestDetail(activeTab === 'requests' ? item.id : "");
@@ -66,14 +68,24 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
       onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
+      onBoost={() => onBoost(fullData.id, activeTab)}
       onClick={onClick}
       hideImage={activeTab === 'requests'}
-      onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+      onWhatsApp={(wa) => {
+        const message = activeTab === 'listings'
+          ? `Halo ${fullData.user?.name || ''}, aku tertarik dengan jastip mu dari ${fullData.from_loc} ke ${fullData.to_loc} untuk item '${fullData.title}' di Titip.in.`
+          : `Halo ${fullData.user?.name || ''}, saya melihat request jastip Anda dari ${fullData.from_loc} ke ${fullData.to_loc} untuk item '${fullData.title}' di Titip.in. Saya bisa membantu membelikannya.`;
+        window.open(makeWhatsAppUrl(wa, message), '_blank');
+      }}
+      userTier={currentUser?.tier}
+      boostedAt={fullData.boosted_at}
+      boostQuota={currentUser?.boost_quota}
     />
   );
 }
 
 export default function JastipMinePage() {
+  const currentUser = useAuthStore((s) => s.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"listings" | "requests">((searchParams.get("tab") as "listings" | "requests") || "listings");
 
@@ -97,6 +109,7 @@ export default function JastipMinePage() {
 
   const deleteListing = useDeleteJastipListing();
   const deleteRequest = useDeleteJastipRequest();
+  const boostItem = useBoostItem();
 
   const isLoading = activeTab === "listings" ? loadingListings : loadingRequests;
   const currentData = activeTab === "listings" ? listings : requests;
@@ -132,6 +145,51 @@ export default function JastipMinePage() {
     setDialogOpen(true);
   };
 
+  const handleBoost = (id: string, tab: string) => {
+    // Gate: basic tier has no boost at all, others check remaining quota
+    if (!currentUser?.tier || currentUser.tier === 'basic') {
+      confirmAction(
+        "⚡ Upgrade untuk Boost",
+        "Fitur Boost hanya tersedia untuk pengguna Titip Plus dan Pro. Upgrade sekarang untuk memprioritaskan listing kamu di halaman utama dan meningkatkan visibilitas.",
+        async () => {}
+      );
+      return;
+    }
+
+    if ((currentUser?.boost_quota ?? 0) <= 0) {
+      confirmAction(
+        "Kuota Boost Habis",
+        `Kuota boost kamu bulan ini sudah habis. Kamu bisa upgrade ke plan yang lebih tinggi untuk mendapatkan lebih banyak kuota boost, atau tunggu sampai awal bulan depan ketika kuota direset secara otomatis.`,
+        async () => {}
+      );
+      return;
+    }
+
+    const targetItem = activeTab === 'listings' ? listings?.find(l => l.id === id) : requests?.find(r => r.id === id);
+    
+    const executeBoost = () => {
+      boostItem.mutate({
+        type: tab === 'listings' ? 'jastip_listing' : 'jastip_request',
+        id
+      });
+    };
+
+    if (targetItem?.boosted_at) {
+      confirmAction(
+        "Boost Ulang Item?",
+        "Item ini sudah dipromosikan. Melakukan boost lagi akan memotong 1 kuota untuk menaikkan posisi item ini ke paling atas. Lanjutkan?",
+        executeBoost
+      );
+    } else {
+      confirmAction(
+        "Promosikan Item ini?",
+        `Ingin menggunakan 1 kuota Boost untuk mempromosikan item ini? Tindakan ini akan menaikkan posisi item ini ke paling atas di halaman utama agar lebih mudah dilihat pembeli. Sisa kuota Anda: ${currentUser.boost_quota || 0}.`,
+        executeBoost
+      );
+    }
+  };
+
+
   const handleStatusChange = (id: string, newStatus: string) => {
     // When re-opening a CLOSED listing, require a new deadline AND check limit
     if (newStatus === 'ACTIVE') {
@@ -166,9 +224,14 @@ export default function JastipMinePage() {
       return 'Aktif';
     };
 
+    const targetItem = activeTab === 'listings' ? listings?.find(l => l.id === id) : requests?.find(r => r.id === id);
+    const isLosingBoost = targetItem?.boosted_at && (newStatus === 'CLOSED' || newStatus === 'TAKEN');
+
     confirmAction(
       "Konfirmasi Ubah Status",
-      `Ubah status menjadi ${getLabel(newStatus)}?`,
+      isLosingBoost 
+        ? `Item ini sedang dipromosikan (boosted). Mengubah status menjadi ${getLabel(newStatus)} akan menghapus promosinya dan kuota tidak akan dikembalikan. Lanjutkan?`
+        : `Ubah status menjadi ${getLabel(newStatus)}?`,
       async () => {
         try {
           const endpoint = activeTab === 'listings' ? `/v1/jastip/listings/${id}` : `/v1/jastip/requests/${id}`;
@@ -293,6 +356,7 @@ export default function JastipMinePage() {
               onStatusChange={handleStatusChange}
               onDeleteListing={handleDeleteListing}
               onDeleteRequest={handleDeleteRequest}
+              onBoost={handleBoost}
               onClick={() => navigate(`/jastip/${activeTab === 'listings' ? 'listings' : 'requests'}/${item.id}`)}
               onEdit={() => navigate(`/jastip/${activeTab === 'listings' ? 'listings' : 'requests'}/edit/${item.id}`)}
             />

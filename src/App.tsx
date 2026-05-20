@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useAdminStore } from '@/stores/adminStore'
 import { Toaster } from '@/components/ui/sonner'
 import LandingPage from '@/pages/landing/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -35,13 +36,22 @@ import SearchPage from '@/pages/search/SearchPage'
 import ProfilePage from '@/pages/profile/ProfilePage'
 import SetupProfilePage from '@/pages/profile/SetupProfilePage'
 
+// Analytics Page
+import AnalyticsDashboardPage from '@/pages/analytics/AnalyticsDashboardPage'
+
 // About Page
 import AboutPage from '@/pages/about/AboutPage'
 
 // Android Page
 import AndroidPage from '@/pages/android/AndroidPage'
 
+// Admin Pages
+import AdminLoginPage from '@/pages/admin/AdminLoginPage'
+import AdminUsersPage from '@/pages/admin/AdminUsersPage'
+import AdminItemsPage from '@/pages/admin/AdminItemsPage'
+
 import { MainLayout } from '@/components/layout/MainLayout'
+import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ScrollToTop } from '@/components/ScrollToTop'
 import { GlobalAuthErrorListener } from '@/components/auth/GlobalAuthErrorListener'
 import { RequireWaVerification } from '@/components/auth/RequireWaVerification'
@@ -50,6 +60,13 @@ import { RequireWaVerification } from '@/components/auth/RequireWaVerification'
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   if (!isAuthenticated) return <Navigate to="/landing" replace />
+  return <>{children}</>
+}
+
+// Guard untuk admin route
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAdminStore()
+  if (!isAuthenticated) return <Navigate to="/hidupjokowi/login" replace />
   return <>{children}</>
 }
 
@@ -84,7 +101,7 @@ export default function App() {
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><RegisterPage /></GuestRoute>} />
         <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
-        <Route path="/reset-password" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/auth/google/callback" element={<GuestRoute><GoogleCallbackPage /></GuestRoute>} />
         <Route path="/email-verification" element={<EmailVerificationPage />} />
 
@@ -121,6 +138,15 @@ export default function App() {
         {/* Profile Routes */}
         <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
         <Route path="/setup-profile" element={<ProtectedRoute><SetupProfilePage /></ProtectedRoute>} />
+
+        {/* Analytics Routes */}
+        <Route path="/analytics" element={<ProtectedRoute><MainLayout><AnalyticsDashboardPage /></MainLayout></ProtectedRoute>} />
+
+        {/* Admin Routes */}
+        <Route path="/hidupjokowi/login" element={<AdminLoginPage />} />
+        <Route path="/hidupjokowi" element={<Navigate to="/hidupjokowi/users" replace />} />
+        <Route path="/hidupjokowi/users" element={<AdminRoute><AdminLayout><AdminUsersPage /></AdminLayout></AdminRoute>} />
+        <Route path="/hidupjokowi/items" element={<AdminRoute><AdminLayout><AdminItemsPage /></AdminLayout></AdminRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

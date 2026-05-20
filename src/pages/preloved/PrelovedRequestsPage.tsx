@@ -4,6 +4,7 @@ import { PrelovedCard } from "@/components/home/PrelovedCard";
 import { useNavigate, NavLink } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { makeWhatsAppUrl, formatRupiah } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -79,7 +80,11 @@ export default function PrelovedRequestsPage() {
               isOwner={request.user_id === user?.id}
               hideImage={true}
               onClick={() => navigate(`/preloved/requests/${request.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onWhatsApp={(wa) => {
+                const budgetText = request.max_price ? formatRupiah(request.max_price) : 'Nego';
+                const message = `Halo ${request.user?.name || ''}, saya melihat Anda sedang mencari barang preloved '${request.title}' dengan budget maksimal ${budgetText} di Titip.in. Saya memiliki barang tersebut dan ingin menawarkannya.`;
+                window.open(makeWhatsAppUrl(wa, message), '_blank');
+              }}
             />
           ))
         ) : (

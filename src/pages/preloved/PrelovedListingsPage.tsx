@@ -6,6 +6,7 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 import { useCategories } from "@/hooks/useCategory";
 import { useActiveItemCount } from "@/hooks/useActiveItemCount";
+import { makeWhatsAppUrl, formatRupiah } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -109,7 +110,10 @@ export default function PrelovedListingsPage() {
               actionText="Cek Detail"
               isOwner={listing.user_id === user?.id}
               onClick={() => navigate(`/preloved/listings/${listing.id}`)}
-              onWhatsApp={(wa) => window.open(`https://wa.me/${wa}`, '_blank')}
+              onWhatsApp={(wa) => {
+                const message = `Halo ${listing.user?.name || ''}, saya tertarik dengan barang preloved '${listing.title}' seharga ${formatRupiah(listing.price)} yang Anda jual di Titip.in. Apakah masih tersedia?`;
+                window.open(makeWhatsAppUrl(wa, message), '_blank');
+              }}
             />
           ))
         ) : (

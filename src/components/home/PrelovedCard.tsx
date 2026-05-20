@@ -1,8 +1,9 @@
 import React from "react";
 import { CardImageCarousel } from "./CardImageCarousel";
-import { ListingImage } from "@/types/api";
-import { Check, RotateCcw, Trash2, ArrowRight } from "lucide-react";
+import { ListingImage, UserTier } from "@/types/api";
+import { Check, RotateCcw, Trash2, ArrowRight, Zap, Flame } from "lucide-react";
 import { ListingPlaceholder } from "../ui/ListingPlaceholder";
+import { TierBadge } from "../ui/TierBadge";
 
 interface PrelovedCardProps {
   user: {
@@ -30,12 +31,16 @@ interface PrelovedCardProps {
   onStatusChange?: (newStatus: string) => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  onBoost?: () => void;
   isOwner?: boolean;
   hideImage?: boolean;
+  userTier?: UserTier;
+  boostedAt?: string | null;
+  boostQuota?: number;
 }
 
 export function PrelovedCard({ 
-  user, timeAgo, status, title, price, maxPrice, condition, category, imageUrl, images, description, actionText, featured, onClick, onWhatsApp, onStatusChange, onEdit, onDelete, isOwner, hideImage
+  user, timeAgo, status, title, price, maxPrice, condition, category, imageUrl, images, description, actionText, featured, onClick, onWhatsApp, onStatusChange, onEdit, onDelete, onBoost, isOwner, hideImage, userTier, boostedAt, boostQuota
 }: PrelovedCardProps) {
   
   const isAvailable = status === "AVAILABLE" || status === "OPEN";
@@ -105,11 +110,16 @@ export function PrelovedCard({
               {conditionMap[condition] || condition}
             </span>
           )}
-          {/* Category badge on image */}
           {category && (
             <span className="absolute bottom-3 right-3 rounded-full py-[3px] px-[10px] text-[9px] font-bold tracking-[0.5px] uppercase shadow-sm bg-white/90 backdrop-blur-sm text-charcoal-60">
               {category}
             </span>
+          )}
+          {boostedAt && (
+            <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+              <Flame size={12} fill="currentColor" />
+              Dipromosikan
+            </div>
           )}
         </div>
       )}
@@ -126,7 +136,10 @@ export function PrelovedCard({
                 )}
               </div>
               <div>
-                <div className="text-[13px] font-semibold text-charcoal">{user.name}</div>
+                <div className="text-[13px] font-semibold text-charcoal flex items-center gap-1.5">
+                  {user.name}
+                  {userTier && <TierBadge tier={userTier} size="xs" />}
+                </div>
                 <div className="text-[10px] text-charcoal-60 mt-[1px]">Dibuat {timeAgo}</div>
               </div>
             </div>
@@ -138,6 +151,12 @@ export function PrelovedCard({
               {isOwner && (
                 <span className="bg-charcoal text-cream px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider">
                   Milik Saya
+                </span>
+              )}
+              {boostedAt && (
+                <span className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm shrink-0">
+                  <Flame size={10} fill="currentColor" />
+                  Dipromosikan
                 </span>
               )}
               {category && (
@@ -169,8 +188,18 @@ export function PrelovedCard({
         </div>
 
         {/* Owner CRUD actions */}
-        {isOwner && (onStatusChange || onDelete) && (
+        {isOwner && (onStatusChange || onDelete || onBoost) && (
           <div className="mt-3 pt-3 border-t border-subtle flex gap-2">
+            {isAvailable && onBoost && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onBoost(); }}
+                title="Boost Listing"
+                className="py-2 px-3 rounded-full text-[11px] font-semibold transition-colors flex items-center justify-center gap-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-sm hover:opacity-90"
+              >
+                <Zap size={14} fill="currentColor" />
+                <span className="hidden sm:inline">Boost</span>
+              </button>
+            )}
             {onStatusChange && (
               <button
                 onClick={(e) => { 

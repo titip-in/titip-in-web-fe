@@ -10,6 +10,7 @@ interface AuthState {
   authError: 'PROFILE_INCOMPLETE' | 'EMAIL_UNVERIFIED' | 'WA_UNVERIFIED' | null
   setAuth: (user: User, token: string) => void
   setAuthError: (error: 'PROFILE_INCOMPLETE' | 'EMAIL_UNVERIFIED' | 'WA_UNVERIFIED' | null) => void
+  updateBoostQuota: (quota: number) => void
   logout: () => void
 }
 
@@ -28,6 +29,12 @@ export const useAuthStore = create<AuthState>()(
 
       setAuthError: (error) => {
         set({ authError: error })
+      },
+
+      updateBoostQuota: (quota) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, boost_quota: quota } : null
+        }))
       },
 
       logout: () => {

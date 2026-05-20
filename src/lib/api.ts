@@ -23,6 +23,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Auto logout on token expiration or invalid token
       useAuthStore.getState().logout();
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login?expired=true';
+      }
     } else if (error.response?.status === 403) {
       const data = error.response.data;
       const errorCode = data?.error_code || data?.message;

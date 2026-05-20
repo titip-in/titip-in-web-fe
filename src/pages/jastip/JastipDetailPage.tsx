@@ -1,15 +1,17 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Pause, Play, Trash2, ShieldCheck } from "lucide-react";
+import { Pause, Play, Trash2, ShieldCheck, Flame } from "lucide-react";
 import { useJastipListingDetail } from "@/hooks/useJastip";
 import { Button } from "@/components/ui/button";
 import { DetailImageGallery } from "@/components/ui/DetailImageGallery";
 import { useAuthStore } from "@/stores/authStore";
 import { useDeleteJastipListing } from "@/hooks/useJastip";
+import { useBoostItem } from "@/hooks/useBoost";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories } from "@/hooks/useCategory";
+import { makeWhatsAppUrl } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,8 +42,61 @@ export default function JastipDetailPage() {
   };
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [dialogConfig, setDialogConfig] = React.useState<{title: string, description: string, action: () => Promise<void> | void}>({
+    title: "",
+    description: "",
+    action: () => {}
+  });
+
+  const confirmAction = (title: string, description: string, action: () => Promise<void> | void) => {
+    setDialogConfig({ title, description, action });
+    setDialogOpen(true);
+  };
 
   const isOwner = currentUser?.id === item?.user_id;
+  const boostItem = useBoostItem();
+
+  const handleBoost = () => {
+    if (!currentUser?.tier || currentUser.tier === 'basic') {
+      confirmAction(
+        "⚡ Upgrade untuk Boost",
+        "Fitur Boost hanya tersedia untuk pengguna Titip Plus dan Pro. Upgrade sekarang untuk memprioritaskan listing kamu di halaman utama dan meningkatkan visibilitas.",
+        async () => {}
+      );
+      return;
+    }
+
+    if ((currentUser?.boost_quota ?? 0) <= 0) {
+      confirmAction(
+        "Kuota Boost Habis",
+        `Kuota boost kamu bulan ini sudah habis. Kamu bisa upgrade ke plan yang lebih tinggi untuk mendapatkan lebih banyak kuota boost, atau tunggu sampai awal bulan depan ketika kuota direset secara otomatis.`,
+        async () => {}
+      );
+      return;
+    }
+
+    const executeBoost = () => {
+      boostItem.mutate({
+        type: 'jastip_listing',
+        id: id || ''
+      });
+    };
+
+    if (item?.boosted_at) {
+      confirmAction(
+        "Boost Ulang Item?",
+        "Item ini sudah dipromosikan. Melakukan boost lagi akan memotong 1 kuota untuk menaikkan posisi item ini ke paling atas. Lanjutkan?",
+        executeBoost
+      );
+    } else {
+      confirmAction(
+        "Promosikan Item ini?",
+        `Ingin menggunakan 1 kuota Boost untuk mempromosikan item ini? Tindakan ini akan menaikkan posisi item ini ke paling atas di halaman utama agar lebih mudah dilihat pembeli. Sisa kuota Anda: ${currentUser.boost_quota || 0}.`,
+        executeBoost
+      );
+    }
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     try {
@@ -173,6 +228,17 @@ export default function JastipDetailPage() {
                   )}
                 </Button>
                 <Button 
+                  onClick={handleBoost}
+                  disabled={boostItem.isPending}
+                  className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-full py-6 font-bold mt-2"
+                >
+                  <span className="flex items-center gap-2">
+                    <Flame size={18} fill="currentColor" /> 
+                    {boostItem.isPending ? "Memproses..." : item.boosted_at ? "Boost Ulang Listing" : "Boost Listing"}
+                  </span>
+                </Button>
+
+                <Button 
                   onClick={() => navigate(`/jastip/listings/edit/${id}`)}
                   className="w-full bg-cream/10 border border-white/20 text-cream hover:bg-white/10 rounded-full py-6 font-bold mt-2"
                 >
@@ -216,7 +282,10 @@ export default function JastipDetailPage() {
 
             {!isOwner ? (
               <Button 
-                onClick={() => window.open(`https://wa.me/${item.user?.wa_number}`, '_blank')}
+                onClick={() => {
+                  const message = `Halo ${item.user?.name || ''}, aku tertarik dengan jastip mu dari ${item.from_loc} ke ${item.to_loc} untuk item '${item.title}' di Titip.in.`;
+                  window.open(makeWhatsAppUrl(item.user?.wa_number || '', message), '_blank');
+                }}
                 className="w-full bg-charcoal hover:bg-charcoal-80 text-white rounded-full py-6 text-lg font-semibold gap-3"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -289,6 +358,21 @@ export default function JastipDetailPage() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red hover:bg-red/90 text-white">
               Ya, Hapus Permanen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dialogConfig.title}</AlertDialogTitle>
+            <AlertDialogDescription>{dialogConfig.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={dialogConfig.action} className="bg-charcoal hover:bg-charcoal-80 text-white">
+              Lanjutkan
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

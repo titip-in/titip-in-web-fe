@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Lock, ArrowRight, CheckCircle2 } from "lucide-react";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -33,6 +34,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
     try {
       await api.post("/v1/reset-password", { token, password });
+      useAuthStore.getState().logout();
       setIsSuccess(true);
     } catch (error: any) {
       console.error("Reset password failed:", error);
@@ -54,13 +56,13 @@ export default function ResetPasswordPage() {
             </div>
             <h2 className="font-display text-2xl mb-3 text-charcoal font-medium">Berhasil!</h2>
             <p className="text-sm text-charcoal-60 mb-6 leading-relaxed">
-              Kata sandi Anda telah berhasil diperbarui. Silakan login dengan kata sandi baru Anda.
+              Kata sandi Anda telah berhasil diperbarui. Silakan masuk kembali menggunakan akun Anda di Web atau masuk kembali ke aplikasi Android Titip.in.
             </p>
             <Button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/landing")}
               className="w-full rounded-xl bg-charcoal text-cream hover:bg-charcoal-80"
             >
-              Masuk Sekarang
+              Kembali ke Beranda
             </Button>
           </div>
         ) : (
