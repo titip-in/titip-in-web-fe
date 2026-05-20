@@ -55,5 +55,8 @@ RUN echo 'server { \
 # Expose port 80
 EXPOSE 80
 
+# Configure Nginx graceful shutdown
+STOPSIGNAL SIGQUIT
+
 # Run nginx
 CMD ["nginx", "-g", "daemon off;"]
