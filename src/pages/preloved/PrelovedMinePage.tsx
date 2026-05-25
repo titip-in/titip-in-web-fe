@@ -33,6 +33,13 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
 
   const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
 
+  const normalizeStatusForTab = (newStatus: string) => {
+    if (activeTab === 'requests' && newStatus === 'AVAILABLE') {
+      return 'OPEN';
+    }
+    return newStatus;
+  };
+
   const getCategoryName = () => {
     if (fullData.category) {
       return `${fullData.category.icon || ''} ${fullData.category.name}`.trim();
@@ -66,7 +73,7 @@ function PrelovedMineCardWrapper({ item, idx, activeTab, onStatusChange, onDelet
       description={fullData.description}
       actionText="Lihat Detail"
       isOwner={true}
-      onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
+      onStatusChange={(newStatus) => onStatusChange(fullData.id, normalizeStatusForTab(newStatus))}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
       onBoost={() => onBoost(fullData.id, activeTab)}
@@ -198,6 +205,8 @@ export default function PrelovedMinePage() {
     }
 
     const getLabel = (s: string) => {
+      if (s === 'OPEN') return 'Terbuka';
+      if (s === 'AVAILABLE') return 'Tersedia';
       if (s === 'SOLD') return 'Terjual';
       if (s === 'FOUND') return 'Ditemukan';
       if (s === 'CLOSED') return 'Ditutup';

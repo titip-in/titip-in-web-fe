@@ -34,6 +34,13 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
 
   const fullData = activeTab === 'listings' ? (listingDetail || item) : (requestDetail || item);
 
+  const normalizeStatusForTab = (newStatus: string) => {
+    if (activeTab === 'requests' && newStatus === 'ACTIVE') {
+      return 'OPEN';
+    }
+    return newStatus;
+  };
+
   const getCategoryTag = () => {
     if (fullData.category) {
       return `${fullData.category.icon || ''} ${fullData.category.name}`.trim();
@@ -65,7 +72,7 @@ function JastipMineCardWrapper({ item, activeTab, onStatusChange, onDeleteListin
       images={fullData.images}
       actionText="Lihat Detail"
       isOwner={true}
-      onStatusChange={(newStatus) => onStatusChange(fullData.id, newStatus)}
+      onStatusChange={(newStatus) => onStatusChange(fullData.id, normalizeStatusForTab(newStatus))}
       onEdit={onEdit}
       onDelete={() => activeTab === 'listings' ? onDeleteListing(fullData.id) : onDeleteRequest(fullData.id)}
       onBoost={() => onBoost(fullData.id, activeTab)}
@@ -191,8 +198,10 @@ export default function JastipMinePage() {
 
 
   const handleStatusChange = (id: string, newStatus: string) => {
+    const isReopening = activeTab === 'listings' ? newStatus === 'ACTIVE' : newStatus === 'OPEN';
+
     // When re-opening a CLOSED listing, require a new deadline AND check limit
-    if (newStatus === 'ACTIVE') {
+    if (isReopening) {
       const isLimited = activeTab === 'listings' ? isJastipListingLimitReached : isJastipRequestLimitReached;
       if (isLimited) {
         setLimitDialogType(activeTab);
@@ -219,6 +228,7 @@ export default function JastipMinePage() {
     }
 
     const getLabel = (s: string) => {
+      if (s === 'OPEN') return 'Terbuka';
       if (s === 'CLOSED') return 'Ditutup';
       if (s === 'TAKEN') return 'Diambil';
       return 'Aktif';
