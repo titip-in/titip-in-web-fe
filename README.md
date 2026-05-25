@@ -79,6 +79,8 @@ The `Jenkinsfile` automates the following stages:
 3. **Push to Docker Hub:** Pushes the versioned image.
 4. **Deploy to EC2:** Automatically updates the running container on the AWS EC2 instance.
 
+Pipeline trigger validation: documentation-only updates should still run the CI/CD checks.
+
 ## 📁 Project Structure
 
 ```text
