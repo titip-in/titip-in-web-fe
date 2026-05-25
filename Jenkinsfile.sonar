@@ -26,9 +26,11 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube analysis..."
-                withSonarQubeEnv('SonarQube') {
+                script {
+                    def scannerHome = tool 'SonarQube-Scanner'
+                    withSonarQubeEnv('SonarQube') {
                     sh """
-                    sonar-scanner \
+                    ${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=titip-in-web-fe \
                         -Dsonar.projectName=titip-in-web-fe \
                         -Dsonar.projectVersion=1.0 \
@@ -36,6 +38,7 @@ pipeline {
                         -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.test.ts,**/*.test.tsx \
                         -Dsonar.sourceEncoding=UTF-8
                     """
+                    }
                 }
             }
         }
