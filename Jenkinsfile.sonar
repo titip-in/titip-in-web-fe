@@ -70,12 +70,12 @@ pipeline {
                     sshagent(['titipin-fe-ec2']) {
                         sh """
                         ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} '
-                            if docker ps --format "{{.Names}}" | grep -q "^frontend-blue\$"; then
+                            if sudo docker ps --format "{{.Names}}" | grep -q "^frontend-blue\$"; then
                                 ACTIVE="blue"
                                 NEW="green"
                                 NEW_PORT="3002"
                                 OLD_PORT="3001"
-                            elif docker ps --format "{{.Names}}" | grep -q "^frontend-green\$"; then
+                            elif sudo docker ps --format "{{.Names}}" | grep -q "^frontend-green\$"; then
                                 ACTIVE="green"
                                 NEW="blue"
                                 NEW_PORT="3001"
@@ -90,12 +90,12 @@ pipeline {
                             echo "Active container: \$ACTIVE"
                             echo "New container: frontend-\$NEW on port \$NEW_PORT"
 
-                            docker pull ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            sudo docker pull ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
 
-                            docker stop frontend-\$NEW || true
-                            docker rm frontend-\$NEW || true
+                            sudo docker stop frontend-\$NEW || true
+                            sudo docker rm frontend-\$NEW || true
 
-                            docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                            sudo docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
 
                             HEALTHY=false
                             for i in {1..15}; do
@@ -107,8 +107,8 @@ pipeline {
                             done
 
                             if [ "\$HEALTHY" != "true" ]; then
-                                docker stop frontend-\$NEW || true
-                                docker rm frontend-\$NEW || true
+                                sudo docker stop frontend-\$NEW || true
+                                sudo docker rm frontend-\$NEW || true
                                 exit 1
                             fi
 
@@ -126,11 +126,11 @@ pipeline {
                             fi
 
                             if [ "\$ACTIVE" != "none" ]; then
-                                docker kill --signal=SIGQUIT frontend-\$ACTIVE || docker stop frontend-\$ACTIVE
-                                docker rm frontend-\$ACTIVE || true
+                                sudo docker kill --signal=SIGQUIT frontend-\$ACTIVE || sudo docker stop frontend-\$ACTIVE
+                                sudo docker rm frontend-\$ACTIVE || true
                             fi
 
-                            docker image prune -f
+                            sudo docker image prune -f
                         '
                         """
                     }
