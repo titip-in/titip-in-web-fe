@@ -61,17 +61,17 @@ pipeline {
                             sh """
                             ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} '
                                 # 1. Tentukan kontainer yang aktif saat ini (Blue, Green, atau legacy Web)
-                                if docker ps --format "{{.Names}}" | grep -q "^frontend-blue\$"; then
+                                if sudo docker ps --format "{{.Names}}" | grep -q "^frontend-blue\$"; then
                                     ACTIVE="blue"
                                     NEW="green"
                                     NEW_PORT="3002"
                                     OLD_PORT="3001"
-                                elif docker ps --format "{{.Names}}" | grep -q "^frontend-green\$"; then
+                                elif sudo docker ps --format "{{.Names}}" | grep -q "^frontend-green\$"; then
                                     ACTIVE="green"
                                     NEW="blue"
                                     NEW_PORT="3001"
                                     OLD_PORT="3002"
-                                elif docker ps --format "{{.Names}}" | grep -q "^frontend-web\$"; then
+                                elif sudo docker ps --format "{{.Names}}" | grep -q "^frontend-web\$"; then
                                     ACTIVE="web"
                                     NEW="green"
                                     NEW_PORT="3002"
@@ -88,14 +88,14 @@ pipeline {
                                 echo "Deploy Kontainer Baru: frontend-\$NEW di port \$NEW_PORT"
 
                                 # 2. Pull image terbaru dari Docker Hub
-                                docker pull ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                                sudo docker pull ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
 
                                 # 3. Matikan & hapus kontainer target lama (jika ada sisa kegagalan sebelumnya)
-                                docker stop frontend-\$NEW || true
-                                docker rm frontend-\$NEW || true
+                                sudo docker stop frontend-\$NEW || true
+                                sudo docker rm frontend-\$NEW || true
 
                                 # 4. Jalankan kontainer baru
-                                docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} || {
+                                sudo docker run -d --name frontend-\$NEW -p \$NEW_PORT:80 ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} || {
                                     echo "Error: Gagal menjalankan kontainer baru frontend-\$NEW! ❌"
                                     exit 1
                                 }
@@ -115,8 +115,8 @@ pipeline {
 
                                 if [ "\$HEALTHY" != "true" ]; then
                                     echo "Error: Kontainer baru gagal lolos health check! Membatalkan deploy... ❌"
-                                    docker stop frontend-\$NEW || true
-                                    docker rm frontend-\$NEW || true
+                                    sudo docker stop frontend-\$NEW || true
+                                    sudo docker rm frontend-\$NEW || true
                                     exit 1
                                 fi
 
@@ -151,12 +151,12 @@ pipeline {
                                 if [ "\$ACTIVE" != "none" ]; then
                                     echo "Mematikan kontainer lama (frontend-\$ACTIVE)..."
                                     # Mengirim signal SIGQUIT ke Nginx untuk graceful shutdown, fallback ke stop jika gagal
-                                    docker kill --signal=SIGQUIT frontend-\$ACTIVE || docker stop frontend-\$ACTIVE
-                                    docker rm frontend-\$ACTIVE || true
+                                    sudo docker kill --signal=SIGQUIT frontend-\$ACTIVE || sudo docker stop frontend-\$ACTIVE
+                                    sudo docker rm frontend-\$ACTIVE || true
                                 fi
 
                                 # 8. Pembersihan Docker Image lama
-                                docker image prune -f
+                                sudo docker image prune -f
                                 echo "=== Deployment Selesai Tanpa Downtime! 🎉 ==="
                             '
                             """
